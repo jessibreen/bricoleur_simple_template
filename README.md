@@ -1,4 +1,4 @@
-# Countermapping v3: GitHub Pages Guide for Non-Coders
+# GitHub Pages Guide
 
 This guide is for students and instructors using GitHub (in the browser) and GitHub Pages.
 
