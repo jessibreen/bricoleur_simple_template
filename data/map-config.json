@@ -1,11 +1,12 @@
 {
   "map": {
-    "center": [40.7128, -74.006],
-    "zoom": 11,
-    "popupLayer": "Places of Reflection",
+    "center": [38.9072, -77.0369],
+    "zoom": 12,
+    "popupLayer": "Hedgehog Census (Fictional)",
     "layerOrder": [
-      "Community Audio Walk",
-      "Places of Reflection"
+      "Hedgehog Density by Ward",
+      "Hedgehog Census (Fictional)",
+      "Hedgehog Vet Clinics"
     ],
     "baselayer": {
       "name": "Carto Light",
@@ -42,39 +43,83 @@
   },
   "layers": [
     {
-      "name": "Community Audio Walk",
-      "file": "data/layers/community_audio_walk.geojson",
-      "layerType": "simple",
+      "name": "Hedgehog Density by Ward",
+      "file": "data/layers/dc_hedgehog_density_wards.geojson",
+      "layerType": "choropleth",
+      "valueField": "hedgehog_density_km2",
+      "breaks": [25, 30, 35, 40],
+      "palette": "green-5",
+      "legendTitle": "Hedgehog Density (/km2)",
       "style": {
-        "color": "#b42814",
-        "weight": 3,
-        "fillColor": "#f99f7d",
-        "fillOpacity": 0.5
-      },
-      "pointStyle": {
-        "radius": 7,
-        "fillColor": "#b42814",
-        "color": "#fff4e9",
+        "color": "#1f2937",
         "weight": 1,
-        "fillOpacity": 0.95
+        "fillOpacity": 0.75
+      },
+      "popup": {
+        "titleField": "ward_name",
+        "descriptionField": "data_note",
+        "fields": [
+          { "field": "ward", "label": "Ward" },
+          { "field": "hedgehog_density_km2", "label": "Density (/km2)" },
+          { "field": "estimated_population", "label": "Estimated Population" }
+        ]
       }
     },
     {
-      "name": "Places of Reflection",
-      "file": "data/layers/places_of_reflection.geojson",
+      "name": "Hedgehog Census (Fictional)",
+      "file": "data/layers/dc_hedgehog_census_points.geojson",
       "layerType": "simple",
       "style": {
-        "color": "#1f5b65",
+        "color": "#0b3a5b",
         "weight": 2,
-        "fillColor": "#77c9c0",
-        "fillOpacity": 0.55
+        "fillColor": "#5fb6e5",
+        "fillOpacity": 0.4
       },
       "pointStyle": {
-        "radius": 8,
-        "fillColor": "#1f5b65",
-        "color": "#f8fffd",
+        "radius": 4,
+        "fillColor": "#0b3a5b",
+        "color": "#f2f8fc",
         "weight": 1,
-        "fillOpacity": 0.95
+        "fillOpacity": 0.85
+      },
+      "popup": {
+        "titleField": "census_id",
+        "descriptionField": "data_note",
+        "fields": [
+          { "field": "ward", "label": "Ward" },
+          { "field": "count_seen", "label": "Count Seen" },
+          { "field": "behavior", "label": "Behavior" },
+          { "field": "health_status", "label": "Health" },
+          { "field": "survey_date", "label": "Survey Date" }
+        ]
+      }
+    },
+    {
+      "name": "Hedgehog Vet Clinics",
+      "file": "data/layers/dc_hedgehog_vet_clinics.geojson",
+      "layerType": "simple",
+      "style": {
+        "color": "#7a2416",
+        "weight": 1,
+        "fillColor": "#f09379",
+        "fillOpacity": 0.45
+      },
+      "pointStyle": {
+        "radius": 6,
+        "fillColor": "#7a2416",
+        "color": "#fff3ef",
+        "weight": 1,
+        "fillOpacity": 0.92
+      },
+      "popup": {
+        "titleField": "name",
+        "descriptionField": "data_note",
+        "fields": [
+          { "field": "clinic_id", "label": "Clinic ID" },
+          { "field": "ward", "label": "Ward" },
+          { "field": "emergency_hours", "label": "Emergency Hours" },
+          { "field": "estimated_monthly_cases", "label": "Monthly Cases" }
+        ]
       }
     }
   ]

@@ -1,6 +1,6 @@
 {
   "map": {
-    "center": [40.7128, -74.006],
+    "center": [38.9072, -77.0369],
     "zoom": 11,
     "baselayer": {
       "name": "Carto Light",
@@ -10,37 +10,54 @@
   },
   "layers": [
     {
-      "name": "Community Audio Walk",
-      "file": "data/layers/community_audio_walk.geojson",
+      "name": "Hedgehog Density by Ward",
+      "file": "data/layers/dc_hedgehog_density_wards.geojson",
       "style": {
-        "color": "#b42814",
-        "weight": 3,
-        "fillColor": "#f99f7d",
-        "fillOpacity": 0.5
+        "color": "#1f2937",
+        "weight": 1,
+        "fillColor": "#74c476",
+        "fillOpacity": 0.7
       },
       "pointStyle": {
-        "radius": 7,
-        "fillColor": "#b42814",
-        "color": "#fff4e9",
+        "radius": 4,
+        "fillColor": "#1f2937",
+        "color": "#f7faf7",
         "weight": 1,
-        "fillOpacity": 0.95
+        "fillOpacity": 0.9
       }
     },
     {
-      "name": "Places of Reflection",
-      "file": "data/layers/places_of_reflection.geojson",
+      "name": "Hedgehog Census (Fictional)",
+      "file": "data/layers/dc_hedgehog_census_points.geojson",
       "style": {
-        "color": "#1f5b65",
+        "color": "#0b3a5b",
         "weight": 2,
-        "fillColor": "#77c9c0",
-        "fillOpacity": 0.55
+        "fillColor": "#5fb6e5",
+        "fillOpacity": 0.4
       },
       "pointStyle": {
-        "radius": 8,
-        "fillColor": "#1f5b65",
-        "color": "#f8fffd",
+        "radius": 4,
+        "fillColor": "#0b3a5b",
+        "color": "#f2f8fc",
         "weight": 1,
-        "fillOpacity": 0.95
+        "fillOpacity": 0.85
+      }
+    },
+    {
+      "name": "Hedgehog Vet Clinics",
+      "file": "data/layers/dc_hedgehog_vet_clinics.geojson",
+      "style": {
+        "color": "#7a2416",
+        "weight": 1,
+        "fillColor": "#f09379",
+        "fillOpacity": 0.45
+      },
+      "pointStyle": {
+        "radius": 6,
+        "fillColor": "#7a2416",
+        "color": "#fff3ef",
+        "weight": 1,
+        "fillOpacity": 0.92
       }
     }
   ]
