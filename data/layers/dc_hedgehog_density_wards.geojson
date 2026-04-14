@@ -1,0 +1,302 @@
+{
+  "type": "FeatureCollection",
+  "name": "dc_hedgehog_density_by_ward",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "ward": 1,
+        "ward_name": "Ward 1",
+        "hedgehog_density_km2": 36.8,
+        "estimated_population": 1180,
+        "data_note": "Fictional hedgehog density values for demonstration only."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -77.07,
+              38.945
+            ],
+            [
+              -77.035,
+              38.945
+            ],
+            [
+              -77.035,
+              38.915
+            ],
+            [
+              -77.07,
+              38.915
+            ],
+            [
+              -77.07,
+              38.945
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward": 2,
+        "ward_name": "Ward 2",
+        "hedgehog_density_km2": 31.2,
+        "estimated_population": 990,
+        "data_note": "Fictional hedgehog density values for demonstration only."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -77.035,
+              38.945
+            ],
+            [
+              -77.0,
+              38.945
+            ],
+            [
+              -77.0,
+              38.915
+            ],
+            [
+              -77.035,
+              38.915
+            ],
+            [
+              -77.035,
+              38.945
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward": 3,
+        "ward_name": "Ward 3",
+        "hedgehog_density_km2": 22.4,
+        "estimated_population": 760,
+        "data_note": "Fictional hedgehog density values for demonstration only."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -77.105,
+              38.915
+            ],
+            [
+              -77.07,
+              38.915
+            ],
+            [
+              -77.07,
+              38.885
+            ],
+            [
+              -77.105,
+              38.885
+            ],
+            [
+              -77.105,
+              38.915
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward": 4,
+        "ward_name": "Ward 4",
+        "hedgehog_density_km2": 40.1,
+        "estimated_population": 1290,
+        "data_note": "Fictional hedgehog density values for demonstration only."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -77.07,
+              38.915
+            ],
+            [
+              -77.035,
+              38.915
+            ],
+            [
+              -77.035,
+              38.885
+            ],
+            [
+              -77.07,
+              38.885
+            ],
+            [
+              -77.07,
+              38.915
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward": 5,
+        "ward_name": "Ward 5",
+        "hedgehog_density_km2": 34.5,
+        "estimated_population": 1115,
+        "data_note": "Fictional hedgehog density values for demonstration only."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -77.035,
+              38.915
+            ],
+            [
+              -77.0,
+              38.915
+            ],
+            [
+              -77.0,
+              38.885
+            ],
+            [
+              -77.035,
+              38.885
+            ],
+            [
+              -77.035,
+              38.915
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward": 6,
+        "ward_name": "Ward 6",
+        "hedgehog_density_km2": 27.8,
+        "estimated_population": 900,
+        "data_note": "Fictional hedgehog density values for demonstration only."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -77.0,
+              38.915
+            ],
+            [
+              -76.965,
+              38.915
+            ],
+            [
+              -76.965,
+              38.885
+            ],
+            [
+              -77.0,
+              38.885
+            ],
+            [
+              -77.0,
+              38.915
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward": 7,
+        "ward_name": "Ward 7",
+        "hedgehog_density_km2": 45.3,
+        "estimated_population": 1450,
+        "data_note": "Fictional hedgehog density values for demonstration only."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -77.035,
+              38.885
+            ],
+            [
+              -77.0,
+              38.885
+            ],
+            [
+              -77.0,
+              38.855
+            ],
+            [
+              -77.035,
+              38.855
+            ],
+            [
+              -77.035,
+              38.885
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward": 8,
+        "ward_name": "Ward 8",
+        "hedgehog_density_km2": 29.7,
+        "estimated_population": 960,
+        "data_note": "Fictional hedgehog density values for demonstration only."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -77.0,
+              38.885
+            ],
+            [
+              -76.965,
+              38.885
+            ],
+            [
+              -76.965,
+              38.855
+            ],
+            [
+              -77.0,
+              38.855
+            ],
+            [
+              -77.0,
+              38.885
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

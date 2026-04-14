@@ -1,0 +1,956 @@
+{
+  "type": "FeatureCollection",
+  "name": "dc_hedgehog_vet_clinics",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-001",
+        "name": "Capital Hedgehog Care Clinic 1",
+        "ward": 8,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "08:00-22:00",
+        "estimated_monthly_cases": 16,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.994212,
+          38.85857
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-002",
+        "name": "Capital Hedgehog Care Clinic 2",
+        "ward": 1,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "09:00-21:00",
+        "estimated_monthly_cases": 61,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.058886,
+          38.928198
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-003",
+        "name": "Capital Hedgehog Care Clinic 3",
+        "ward": 5,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "09:00-21:00",
+        "estimated_monthly_cases": 39,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.004697,
+          38.893911
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-004",
+        "name": "Capital Hedgehog Care Clinic 4",
+        "ward": 1,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "24/7",
+        "estimated_monthly_cases": 45,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.062348,
+          38.935857
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-005",
+        "name": "Capital Hedgehog Care Clinic 5",
+        "ward": 1,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "08:00-22:00",
+        "estimated_monthly_cases": 33,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.062504,
+          38.938924
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-006",
+        "name": "Capital Hedgehog Care Clinic 6",
+        "ward": 6,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "08:00-22:00",
+        "estimated_monthly_cases": 37,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.991899,
+          38.894328
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-007",
+        "name": "Capital Hedgehog Care Clinic 7",
+        "ward": 4,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "08:00-22:00",
+        "estimated_monthly_cases": 32,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.048097,
+          38.905733
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-008",
+        "name": "Capital Hedgehog Care Clinic 8",
+        "ward": 2,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "08:00-22:00",
+        "estimated_monthly_cases": 39,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.013655,
+          38.919233
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-009",
+        "name": "Capital Hedgehog Care Clinic 9",
+        "ward": 8,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "09:00-21:00",
+        "estimated_monthly_cases": 21,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.98064,
+          38.867343
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-010",
+        "name": "Capital Hedgehog Care Clinic 10",
+        "ward": 4,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "08:00-22:00",
+        "estimated_monthly_cases": 20,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.046874,
+          38.913137
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-011",
+        "name": "Capital Hedgehog Care Clinic 11",
+        "ward": 5,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "08:00-22:00",
+        "estimated_monthly_cases": 45,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.015629,
+          38.897982
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-012",
+        "name": "Capital Hedgehog Care Clinic 12",
+        "ward": 3,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "09:00-21:00",
+        "estimated_monthly_cases": 18,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.072928,
+          38.90831
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-013",
+        "name": "Capital Hedgehog Care Clinic 13",
+        "ward": 8,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "08:00-22:00",
+        "estimated_monthly_cases": 33,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.995701,
+          38.880755
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-014",
+        "name": "Capital Hedgehog Care Clinic 14",
+        "ward": 1,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "08:00-22:00",
+        "estimated_monthly_cases": 10,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.040145,
+          38.94288
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-015",
+        "name": "Capital Hedgehog Care Clinic 15",
+        "ward": 8,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "24/7",
+        "estimated_monthly_cases": 15,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.969284,
+          38.877835
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-016",
+        "name": "Capital Hedgehog Care Clinic 16",
+        "ward": 3,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "08:00-22:00",
+        "estimated_monthly_cases": 22,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.09426,
+          38.897709
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-017",
+        "name": "Capital Hedgehog Care Clinic 17",
+        "ward": 1,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "24/7",
+        "estimated_monthly_cases": 53,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.058527,
+          38.922111
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-018",
+        "name": "Capital Hedgehog Care Clinic 18",
+        "ward": 4,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "08:00-22:00",
+        "estimated_monthly_cases": 18,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.040457,
+          38.908376
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-019",
+        "name": "Capital Hedgehog Care Clinic 19",
+        "ward": 1,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "09:00-21:00",
+        "estimated_monthly_cases": 13,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.043466,
+          38.932018
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-020",
+        "name": "Capital Hedgehog Care Clinic 20",
+        "ward": 7,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "08:00-22:00",
+        "estimated_monthly_cases": 22,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.032129,
+          38.862598
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-021",
+        "name": "Capital Hedgehog Care Clinic 21",
+        "ward": 2,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "08:00-22:00",
+        "estimated_monthly_cases": 69,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.03033,
+          38.927592
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-022",
+        "name": "Capital Hedgehog Care Clinic 22",
+        "ward": 7,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "09:00-21:00",
+        "estimated_monthly_cases": 41,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.002251,
+          38.857078
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-023",
+        "name": "Capital Hedgehog Care Clinic 23",
+        "ward": 3,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "09:00-21:00",
+        "estimated_monthly_cases": 45,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.078658,
+          38.90126
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-024",
+        "name": "Capital Hedgehog Care Clinic 24",
+        "ward": 4,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "24/7",
+        "estimated_monthly_cases": 57,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.047001,
+          38.907373
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-025",
+        "name": "Capital Hedgehog Care Clinic 25",
+        "ward": 6,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "09:00-21:00",
+        "estimated_monthly_cases": 18,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.981524,
+          38.895719
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-026",
+        "name": "Capital Hedgehog Care Clinic 26",
+        "ward": 2,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "08:00-22:00",
+        "estimated_monthly_cases": 68,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.020731,
+          38.935242
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-027",
+        "name": "Capital Hedgehog Care Clinic 27",
+        "ward": 4,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "09:00-21:00",
+        "estimated_monthly_cases": 63,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.053345,
+          38.89006
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-028",
+        "name": "Capital Hedgehog Care Clinic 28",
+        "ward": 7,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "08:00-22:00",
+        "estimated_monthly_cases": 49,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.003498,
+          38.860677
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-029",
+        "name": "Capital Hedgehog Care Clinic 29",
+        "ward": 7,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "08:00-22:00",
+        "estimated_monthly_cases": 56,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.016203,
+          38.870331
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-030",
+        "name": "Capital Hedgehog Care Clinic 30",
+        "ward": 4,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "24/7",
+        "estimated_monthly_cases": 58,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.04839,
+          38.88836
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-031",
+        "name": "Capital Hedgehog Care Clinic 31",
+        "ward": 5,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "08:00-22:00",
+        "estimated_monthly_cases": 19,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.003536,
+          38.913332
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-032",
+        "name": "Capital Hedgehog Care Clinic 32",
+        "ward": 4,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "09:00-21:00",
+        "estimated_monthly_cases": 50,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.038798,
+          38.888144
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-033",
+        "name": "Capital Hedgehog Care Clinic 33",
+        "ward": 7,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "08:00-22:00",
+        "estimated_monthly_cases": 63,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.021789,
+          38.866314
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-034",
+        "name": "Capital Hedgehog Care Clinic 34",
+        "ward": 2,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "09:00-21:00",
+        "estimated_monthly_cases": 12,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.01973,
+          38.926805
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-035",
+        "name": "Capital Hedgehog Care Clinic 35",
+        "ward": 7,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "09:00-21:00",
+        "estimated_monthly_cases": 39,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.0265,
+          38.873368
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-036",
+        "name": "Capital Hedgehog Care Clinic 36",
+        "ward": 5,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "24/7",
+        "estimated_monthly_cases": 52,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.006873,
+          38.890732
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-037",
+        "name": "Capital Hedgehog Care Clinic 37",
+        "ward": 1,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "08:00-22:00",
+        "estimated_monthly_cases": 61,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.04198,
+          38.943705
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-038",
+        "name": "Capital Hedgehog Care Clinic 38",
+        "ward": 8,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "09:00-21:00",
+        "estimated_monthly_cases": 18,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.968606,
+          38.872205
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-039",
+        "name": "Capital Hedgehog Care Clinic 39",
+        "ward": 6,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "24/7",
+        "estimated_monthly_cases": 43,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.989733,
+          38.893903
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-040",
+        "name": "Capital Hedgehog Care Clinic 40",
+        "ward": 1,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "09:00-21:00",
+        "estimated_monthly_cases": 55,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.062346,
+          38.926347
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-041",
+        "name": "Capital Hedgehog Care Clinic 41",
+        "ward": 3,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "24/7",
+        "estimated_monthly_cases": 23,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.073369,
+          38.904852
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-042",
+        "name": "Capital Hedgehog Care Clinic 42",
+        "ward": 5,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "24/7",
+        "estimated_monthly_cases": 56,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.030161,
+          38.89794
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-043",
+        "name": "Capital Hedgehog Care Clinic 43",
+        "ward": 7,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "09:00-21:00",
+        "estimated_monthly_cases": 45,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.011324,
+          38.861842
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-044",
+        "name": "Capital Hedgehog Care Clinic 44",
+        "ward": 1,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "09:00-21:00",
+        "estimated_monthly_cases": 25,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.061323,
+          38.919532
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-045",
+        "name": "Capital Hedgehog Care Clinic 45",
+        "ward": 4,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "09:00-21:00",
+        "estimated_monthly_cases": 60,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.03761,
+          38.903823
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-046",
+        "name": "Capital Hedgehog Care Clinic 46",
+        "ward": 4,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "08:00-22:00",
+        "estimated_monthly_cases": 18,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.046348,
+          38.907848
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-047",
+        "name": "Capital Hedgehog Care Clinic 47",
+        "ward": 7,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "24/7",
+        "estimated_monthly_cases": 30,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.020017,
+          38.862249
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-048",
+        "name": "Capital Hedgehog Care Clinic 48",
+        "ward": 4,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "09:00-21:00",
+        "estimated_monthly_cases": 39,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.045354,
+          38.91322
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-049",
+        "name": "Capital Hedgehog Care Clinic 49",
+        "ward": 1,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "08:00-22:00",
+        "estimated_monthly_cases": 57,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.053357,
+          38.921904
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "clinic_id": "VET-HH-050",
+        "name": "Capital Hedgehog Care Clinic 50",
+        "ward": 5,
+        "accepts_hedgehogs": true,
+        "emergency_hours": "09:00-21:00",
+        "estimated_monthly_cases": 41,
+        "data_note": "Fictional clinic location for demonstration only."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.003444,
+          38.906436
+        ]
+      }
+    }
+  ]
+}
