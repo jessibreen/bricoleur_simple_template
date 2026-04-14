@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Countermapping</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <link rel="stylesheet" href="styles/main.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-brand">
+      <h1>Countermapping</h1>
+    </div>
+    <div class="header-actions">
+      <div class="annotation-controls editing-only">
+        <div id="annotation-toolbar" class="annotation-toolbar">
+          <button class="tool-btn" data-tool="draw" type="button">Draw</button>
+          <button class="tool-btn" data-tool="text" type="button">Text</button>
+          <button class="tool-btn" data-tool="stamp" type="button">Stamp</button>
+          <label>
+            Stamp
+            <input id="annotation-stamp" type="text" value="📍" aria-label="Stamp text" />
+          </label>
+          <label>
+            Color
+            <input id="annotation-color" class="color-input" type="color" value="#f24e1e" aria-label="Drawing color" />
+          </label>
+          <label>
+            Size
+            <input id="annotation-size" type="range" min="2" max="24" value="6" aria-label="Brush size" />
+          </label>
+          <button id="undo-annotation" type="button">Undo</button>
+          <button id="clear-annotations" type="button">Clear</button>
+        </div>
+      </div>
+      <!-- Create by note type first. Pinning is done per-card via "Add Pin". -->
+      <div class="btn-group editing-only">
+        <button id="add-note-btn" type="button">+ Text Note</button>
+        <button id="add-media-btn" type="button">+ Media Note</button>
+      </div>
+      <button id="export-image-btn" class="editing-only" type="button">Export Image</button>
+      <button id="save-btn" class="editing-only" type="button">Download JSON</button>
+      <button id="load-btn" class="editing-only" type="button">Load JSON</button>
+      <input id="load-input" type="file" accept="application/json,.json" hidden />
+    </div>
+  </header>
+
+  <!-- Map fills all remaining vertical space -->
+  <div id="map-container">
+    <div id="map" aria-label="Interactive map"></div>
+
+    <!-- String SVG overlay — redrawn on every map move/zoom -->
+    <svg id="string-layer" aria-hidden="true"></svg>
+
+    <!-- Draw/annotation overlay -->
+    <div id="annotation-layer" class="annotation-layer" aria-hidden="true">
+      <canvas id="annotation-canvas"></canvas>
+      <input id="annotation-inline-input" class="annotation-inline-input is-hidden" type="text" placeholder="Type text..." />
+    </div>
+
+    <div id="annotation-input-popover" class="annotation-input-popover is-hidden editing-only" role="dialog" aria-label="Add annotation text">
+      <input id="annotation-input-field" type="text" placeholder="Type and press Enter" />
+      <button id="annotation-input-apply" type="button" title="Apply">Add</button>
+      <button id="annotation-input-cancel" type="button" title="Cancel">Cancel</button>
+    </div>
+
+    <!-- Cards layer — floating and anchored cards live here -->
+    <div id="cards-layer" aria-label="Cards and notes"></div>
+
+    <!-- Baselayer control (editing only) -->
+    <div id="baselayer-control" class="baselayer-control editing-only" aria-label="Map background">
+      <!-- pill buttons populated by JS -->
+    </div>
+
+    <aside id="legend-control" class="legend-control" aria-label="Map legend"></aside>
+
+    <!-- Drop-pin mode instruction banner -->
+    <div id="drop-banner" class="drop-banner" aria-live="polite">
+      Click anywhere on the map to place a pin for the selected card — press <kbd>Esc</kbd> to cancel
+    </div>
+  </div>
+
+  <!-- Navigation hint shown in view mode -->
+  <div id="view-hint" class="view-hint" role="status" aria-live="polite">
+    <span>Drag to pan &nbsp;·&nbsp; Scroll to zoom &nbsp;·&nbsp; Click map markers to open popups &nbsp;·&nbsp; Tap media to play</span>
+    <button class="view-hint__close" type="button" aria-label="Dismiss tips">&times;</button>
+  </div>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script type="module" src="scripts/main.js"></script>
+</body>
+</html>

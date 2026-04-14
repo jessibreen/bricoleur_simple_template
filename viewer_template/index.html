@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Countermapping Viewer Template</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <link rel="stylesheet" href="styles/main.css" />
+</head>
+<body class="view-mode">
+  <header class="site-header">
+    <div>
+      <h1>Countermapping Viewer</h1>
+      <p>Starter viewer template for shared boards (customize as your portfolio grows)</p>
+    </div>
+    <div class="header-actions">
+      <button id="zoom-out-btn" type="button">-</button>
+      <button id="zoom-in-btn" type="button">+</button>
+      <button id="reset-zoom-btn" type="button">Reset Zoom</button>
+      <span id="mode-pill" class="mode-pill" aria-live="polite">Viewer Mode</span>
+    </div>
+  </header>
+
+  <main id="viewport" class="viewport" aria-label="Infinite collage viewport">
+    <div id="world" class="world">
+      <svg id="string-layer" class="string-layer" aria-hidden="true"></svg>
+    </div>
+  </main>
+
+  <template id="map-panel-template">
+    <section class="panel map-panel" data-draggable="true" style="left: 80px; top: 90px; width: 720px; height: 520px;">
+      <header class="panel-handle">
+        <h2 class="panel-title">Map</h2>
+        <div class="panel-header-actions">
+          <button class="pin-dot" type="button" title="Pin for string connection">Pin</button>
+          <button class="toggle-tools-btn" type="button">Tools</button>
+          <button class="delete-card-btn" type="button" aria-label="Delete map panel">X</button>
+        </div>
+      </header>
+      <div class="map-controls">
+        <label>Layer order:</label>
+        <select class="layer-order"></select>
+        <button class="move-layer-up" type="button">Up</button>
+        <button class="move-layer-down" type="button">Down</button>
+        <button class="redraw-layers" type="button">Redraw</button>
+      </div>
+      <div class="map-wrap">
+        <div class="map-root" aria-label="Leaflet map"></div>
+        <div class="annotation-toolbar is-hidden">
+          <button class="tool-btn is-active" data-tool="draw" type="button">Draw</button>
+          <button class="tool-btn" data-tool="erase" type="button">Erase</button>
+          <button class="tool-btn" data-tool="text" type="button">Text</button>
+          <button class="tool-btn" data-tool="emoji" type="button">Emoji</button>
+          <input class="emoji-input" type="text" value="📌" aria-label="Emoji stamp" />
+          <input class="color-input" type="color" value="#f24e1e" aria-label="Drawing color" />
+          <input class="size-input" type="range" min="2" max="28" value="5" aria-label="Brush size" />
+          <button class="clear-annotations" type="button">Clear</button>
+        </div>
+        <div class="p5-canvas-host" aria-hidden="true"></div>
+      </div>
+    </section>
+  </template>
+
+  <template id="note-card-template">
+    <section class="panel note-card" data-draggable="true" style="left: 220px; top: 200px; width: 320px; height: 250px;">
+      <header class="panel-handle">
+        <h2>Note</h2>
+        <div class="panel-header-actions">
+          <button class="pin-dot" type="button" title="Pin for string connection">Pin</button>
+          <button class="delete-card-btn" type="button" aria-label="Delete note card">X</button>
+        </div>
+      </header>
+      <textarea class="card-textarea" placeholder="Write fieldnotes, interpretations, citations, or prompts..."></textarea>
+    </section>
+  </template>
+
+  <div id="view-hint" class="view-hint" role="status" aria-live="polite">
+    <span>Scroll or drag to pan &nbsp;&middot;&nbsp; Use <kbd>+</kbd> / <kbd>-</kbd> to zoom &nbsp;&middot;&nbsp; Click the map to open popups &nbsp;&middot;&nbsp; Tap media to play</span>
+    <button class="view-hint__close" type="button" aria-label="Dismiss tips">&times;</button>
+  </div>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+  <script type="module" src="scripts/main.js"></script>
+</body>
+</html>

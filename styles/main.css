@@ -1,0 +1,907 @@
+/* ── Custom properties ─────────────────────────────────────────────────────── */
+:root {
+  --ink: #1a1a1a;
+  --accent: #e63946;
+  --panel: #ffffff;
+  --panel-border: #d1d5db;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.09), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.13), 0 1px 4px rgba(0, 0, 0, 0.08);
+  --string-color: #e63946;
+}
+
+/* ── Reset / base ──────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  color: var(--ink);
+  overflow: hidden; /* no body scroll — map fills everything */
+}
+
+body {
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+/* ── Site header ───────────────────────────────────────────────────────────── */
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 1rem;
+  background: #fff;
+  border-bottom: 2px solid #e5e7eb;
+  z-index: 600;
+  overflow: hidden;
+}
+
+.header-brand h1 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.annotation-controls {
+  display: flex;
+  align-items: center;
+}
+
+.annotation-toolbar {
+  position: static;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem;
+  border: 1.5px solid var(--panel-border);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+
+.annotation-toolbar.is-hidden {
+  display: none;
+}
+
+.annotation-toolbar label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.72rem;
+  color: #4b5563;
+}
+
+#annotation-stamp {
+  width: 4.5rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 0.2rem 0.35rem;
+  font: 0.78rem "Space Grotesk", system-ui, sans-serif;
+}
+
+.tool-btn.is-active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.color-input {
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: transparent;
+}
+
+.btn-group {
+  display: flex;
+  gap: 0.2rem;
+  border: 1.5px solid var(--panel-border);
+  border-radius: 7px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.btn-group button {
+  border: none;
+  border-radius: 0;
+  border-right: 1px solid var(--panel-border);
+}
+
+.btn-group button:last-child {
+  border-right: none;
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────────── */
+button {
+  border: 1.5px solid var(--panel-border);
+  border-radius: 6px;
+  padding: 0.3rem 0.65rem;
+  background: #fff;
+  color: var(--ink);
+  font: 500 0.82rem "Space Grotesk", system-ui, sans-serif;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+button:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+button.is-active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+button.is-active:hover {
+  background: #c1121f;
+}
+
+select {
+  border: 1.5px solid var(--panel-border);
+  border-radius: 6px;
+  padding: 0.3rem 0.65rem;
+  background: #fff;
+  color: var(--ink);
+  font: 500 0.82rem "Space Grotesk", system-ui, sans-serif;
+  cursor: pointer;
+  position: relative;
+  z-index: 601;
+}
+
+select:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+select:focus {
+  outline: 2px solid #6b7280;
+  outline-offset: 1px;
+  border-color: #6b7280;
+}
+
+select option {
+  padding: 0.4rem 0.5rem;
+}
+
+/* ── On-map baselayer control ─────────────────────────────────────── */
+.baselayer-control {
+  position: absolute;
+  bottom: 2rem;
+  left: 0.75rem;
+  z-index: 450;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  pointer-events: auto;
+}
+
+.baselayer-control button {
+  display: block;
+  width: 7rem;
+  text-align: left;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.78rem;
+  background: rgba(255,255,255,0.92);
+  border: 1.5px solid rgba(0,0,0,0.18);
+  border-radius: 5px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.baselayer-control button:hover {
+  background: #fff;
+  border-color: #9ca3af;
+}
+
+.baselayer-control button.is-active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.legend-control {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 2rem;
+  z-index: 455;
+  display: none;
+  max-width: 16rem;
+  padding: 0.7rem 0.8rem;
+  border: 1.5px solid rgba(0, 0, 0, 0.14);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(4px);
+}
+
+.legend-control.is-visible {
+  display: block;
+}
+
+.legend-block + .legend-block {
+  margin-top: 0.8rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.legend-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.legend-items {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.legend-item {
+  display: grid;
+  grid-template-columns: 0.95rem 1fr;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.76rem;
+  line-height: 1.3;
+}
+
+.legend-swatch {
+  width: 0.95rem;
+  height: 0.95rem;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 3px;
+}
+
+.legend-swatch.is-circle {
+  border-radius: 999px;
+}
+
+.legend-swatch.is-diamond {
+  transform: rotate(45deg);
+  border-radius: 1px;
+}
+
+.data-point-icon {
+  background: none;
+  border: none;
+}
+
+.data-point-icon span {
+  display: block;
+  box-sizing: border-box;
+}
+
+.data-point-icon--square span {
+  border-radius: 2px;
+}
+
+.data-point-icon--diamond span {
+  border-radius: 2px;
+  transform: rotate(45deg);
+}
+
+/* ── Map container ─────────────────────────────────────────────────────────── */
+#map-container {
+  position: relative;
+  overflow: hidden; /* clips the cards/string overlay to the map area */
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── SVG string layer ──────────────────────────────────────────────────────── */
+#string-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 410;
+}
+
+#annotation-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 430;
+  pointer-events: none;
+}
+
+#annotation-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+#annotation-layer.is-active {
+  pointer-events: auto;
+}
+
+#annotation-layer.is-active #annotation-canvas {
+  cursor: crosshair;
+}
+
+
+
+.annotation-input-popover {
+  position: absolute;
+  z-index: 940;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem;
+  border: 1.5px solid var(--panel-border);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow-md);
+}
+
+.annotation-input-popover.is-hidden {
+  display: none;
+}
+
+.annotation-inline-input {
+  position: absolute;
+  z-index: 950;
+  border: 1.5px solid var(--ink);
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 4px;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 400;
+  color: var(--ink);
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.annotation-inline-input.is-hidden {
+  display: none;
+}
+
+#annotation-input-field {
+  width: 220px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 0.3rem 0.45rem;
+  font: 0.78rem "Space Grotesk", system-ui, sans-serif;
+}
+
+#annotation-input-field:focus {
+  outline: none;
+  border-color: #9ca3af;
+}
+
+.string-path {
+  fill: none;
+  stroke: var(--string-color);
+  stroke-width: 2;
+  stroke-linecap: round;
+  /* slight transparency for the "thread" look */
+  opacity: 0.82;
+}
+
+/* ── Cards layer ───────────────────────────────────────────────────────────── */
+#cards-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none; /* layer itself is passthrough; cards opt-in */
+  z-index: 450;
+}
+
+/* ── Individual card ───────────────────────────────────────────────────────── */
+.card {
+  position: absolute;
+  pointer-events: auto;
+  background: var(--panel);
+  border: 1.5px solid var(--panel-border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  width: 260px;
+  min-height: 140px;
+  resize: both;
+  overflow: hidden;
+  animation: card-in 200ms ease both;
+  /* Leaflet's z-index sits at ~400; keep cards above */
+  z-index: 1;
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: scale(0.94) translateY(4px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+/* Anchored cards: red top border signals geographic attachment */
+.card.is-anchored {
+  border-top: 3px solid var(--accent);
+}
+
+.card.is-zoom-hidden {
+  display: none;
+}
+
+.card.is-minimized .card-body {
+  display: none;
+}
+
+.card.is-minimized {
+  min-height: 0;
+  resize: none;
+}
+
+.card.is-minimized .card-handle {
+  border-bottom: none;
+}
+
+.card.is-minimized .card-title-input {
+  display: none;
+}
+
+.card.is-minimized .card-title-view {
+  display: block;
+}
+
+.card.is-minimized .card-type-badge,
+.card.is-minimized .card-pin-btn,
+.card.is-minimized .card-delete-btn {
+  display: none;
+}
+
+/* ── Card handle (drag bar) ────────────────────────────────────────────────── */
+.card-handle {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.6rem 0.5rem;
+  min-height: 2.4rem;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 8px 8px 0 0;
+  cursor: move;
+  user-select: none;
+}
+
+.card-title-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font: 700 0.82rem "Space Grotesk", system-ui, sans-serif;
+  line-height: 1.6;
+  padding: 0;
+  color: var(--ink);
+  outline: none;
+  min-width: 0;
+  align-self: center;
+  height: auto;
+  overflow: visible;
+}
+
+.card-title-input:focus {
+  background: #f0f2f4;
+  border-radius: 3px;
+  padding: 4px 3px;
+}
+
+/* Shown in view mode instead of the input */
+.card-title-view {
+  display: none;
+  flex: 1;
+  font: 700 0.82rem "Space Grotesk", system-ui, sans-serif;
+  line-height: 1.2;
+  padding: 4px 0;
+  color: var(--ink);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-type-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #9ca3af;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.card-pin-btn {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #374151;
+  border-radius: 999px;
+  font-size: 0.67rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.22rem 0.45rem;
+  white-space: nowrap;
+}
+
+.card-min-btn {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #374151;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1;
+  width: 1.45rem;
+  height: 1.45rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.card-min-btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.card-pin-btn.is-active {
+  border-color: var(--accent);
+  background: #fff1f2;
+  color: #b91c1c;
+}
+
+.card-delete-btn {
+  border: none;
+  background: none;
+  color: #9ca3af;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0.1rem 0.2rem;
+  cursor: pointer;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.card-delete-btn:hover {
+  color: var(--accent);
+  background: #fee2e2;
+  border-color: transparent;
+}
+
+/* ── Card body ─────────────────────────────────────────────────────────────── */
+.card-body {
+  padding: 0.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  background: var(--panel);
+}
+
+.card-textarea {
+  flex: 1;
+  min-height: 80px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 0.4rem 0.45rem;
+  font: 0.82rem "Space Grotesk", system-ui, sans-serif;
+  color: var(--ink);
+  background: #fafafa;
+  resize: none;
+  field-sizing: content; /* grow to content where supported */
+}
+
+.card-media-input-row {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.card--media .card-body {
+  min-height: 0;
+}
+
+.card-media-url {
+  flex: 1;
+  min-width: 0;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 0.32rem 0.45rem;
+  font: 0.78rem/1 ui-monospace, monospace;
+  color: var(--ink);
+  background: #fafafa;
+}
+
+.card-media-file-btn {
+  flex-shrink: 0;
+  cursor: pointer;
+  font: 0.75rem "Space Grotesk", system-ui, sans-serif;
+  padding: 0.28rem 0.55rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 6px;
+  background: #f3f4f6;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.card-media-file-btn input[type="file"] {
+  display: none;
+}
+
+.card-media-player {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.card-media-player img,
+.card-media-player video {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  object-fit: contain;
+  border-radius: 5px;
+}
+
+.card-media-player audio {
+  width: 100%;
+}
+
+.card-media-player a {
+  font-size: 0.82rem;
+  color: #457b9d;
+}
+
+.card-media-iframe {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 16 / 9;
+  border: none;
+  border-radius: 5px;
+}
+
+.card-media-iframe--audio {
+  aspect-ratio: unset;
+  height: 80px;
+}
+
+.card-media-hint {
+  font-size: 0.78rem;
+  color: #6b7280;
+  padding: 0.4rem 0;
+  margin: 0;
+}
+
+.card-media-export-fallback {
+  width: 100%;
+  min-height: 96px;
+  border: 1.5px dashed #d1d5db;
+  border-radius: 6px;
+  background: #f9fafb;
+  color: #6b7280;
+  font: 0.78rem/1.35 "Space Grotesk", system-ui, sans-serif;
+  padding: 0.55rem;
+  display: flex;
+  align-items: center;
+  text-align: center;
+}
+
+/* ── Export stability overrides ───────────────────────────────────────────── */
+body.is-exporting .card {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+body.is-exporting .leaflet-pane,
+body.is-exporting .leaflet-marker-pane,
+body.is-exporting .leaflet-overlay-pane,
+body.is-exporting .leaflet-zoom-animated {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* ── Pushpin icon (Leaflet DivIcon) ────────────────────────────────────────── */
+.pushpin-icon {
+  background: none;
+  border: none;
+}
+
+/* ── Drop-pin mode feedback ────────────────────────────────────────────────── */
+body.drop-pin-mode #map {
+  cursor: crosshair;
+}
+
+body.drop-pin-mode .site-header {
+  background: #fff1f2;
+  border-bottom-color: var(--accent);
+}
+
+.drop-banner {
+  display: none;
+  position: absolute;
+  bottom: 1.6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 600;
+  padding: 0.55rem 1.1rem;
+  background: rgba(26, 26, 26, 0.88);
+  color: #fff;
+  font-size: 0.85rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+
+.drop-banner kbd {
+  display: inline-block;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 4px;
+  padding: 0.05rem 0.35rem;
+  font: inherit;
+  font-size: 0.8rem;
+}
+
+body.drop-pin-mode .drop-banner {
+  display: block;
+}
+
+/* ── View mode ─────────────────────────────────────────────────────────────── */
+body.view-mode .editing-only {
+  display: none !important;
+}
+
+body.view-mode .card-handle {
+  cursor: default;
+}
+
+body.view-mode .card-title-input {
+  display: none;
+}
+
+body.view-mode .card-title-view {
+  display: block;
+}
+
+body.view-mode .card-type-badge {
+  display: none;
+}
+
+body.view-mode .card-textarea {
+  pointer-events: none;
+  resize: none;
+  background: transparent;
+  border-color: transparent;
+}
+
+body.view-mode .card-media-url {
+  display: none;
+}
+
+body.view-mode .card-media-input-row {
+  display: none;
+}
+
+/* ── View-mode navigation hint ─────────────────────────────────────────────── */
+.view-hint {
+  display: none;
+  position: fixed;
+  bottom: 1.4rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9000;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1.1rem;
+  background: rgba(26, 26, 26, 0.88);
+  color: #fff;
+  font-size: 0.85rem;
+  border-radius: 999px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s;
+}
+
+.view-hint.is-visible {
+  display: flex;
+  pointer-events: auto;
+  opacity: 1;
+}
+
+.view-hint kbd {
+  display: inline-block;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 4px;
+  padding: 0.05rem 0.35rem;
+  font: inherit;
+  font-size: 0.8rem;
+}
+
+.view-hint__close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0 0.1rem;
+  cursor: pointer;
+}
+
+.view-hint__close:hover {
+  color: #fff;
+  background: none;
+  border: none;
+}
+
+/* ── Leaflet popup (matches v2 style) ──────────────────────────────────────── */
+.leaflet-popup-content-wrapper {
+  padding: 2px;
+  border-radius: 8px;
+}
+
+.leaflet-popup-content {
+  margin: 6px 10px;
+  font-size: 0.88rem;
+}
+
+.leaflet-popup-content h3 {
+  margin: 0 0 0.2rem;
+  font-size: 0.92rem;
+}
+
+.leaflet-popup-content p {
+  margin: 0;
+}
+
+.popup-fields {
+  margin-top: 0.4rem;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.popup-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  align-items: start;
+}
+
+.popup-key {
+  font-weight: 600;
+  color: #374151;
+}
+
+.popup-value {
+  color: #111827;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.popup-media {
+  width: 100%;
+  max-height: 170px;
+  object-fit: contain;
+  margin-top: 0.3rem;
+}

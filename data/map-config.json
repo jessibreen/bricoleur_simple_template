@@ -1,0 +1,81 @@
+{
+  "map": {
+    "center": [40.7128, -74.006],
+    "zoom": 11,
+    "popupLayer": "Places of Reflection",
+    "layerOrder": [
+      "Community Audio Walk",
+      "Places of Reflection"
+    ],
+    "baselayer": {
+      "name": "Carto Light",
+      "url": "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+      "attribution": "&copy; OpenStreetMap contributors &copy; CARTO"
+    },
+    "baselayers": [
+      {
+        "name": "Carto Light",
+        "url": "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+        "attribution": "&copy; OpenStreetMap contributors &copy; CARTO"
+      },
+      {
+        "name": "Carto Dark",
+        "url": "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+        "attribution": "&copy; OpenStreetMap contributors &copy; CARTO"
+      },
+      {
+        "name": "OpenStreetMap",
+        "url": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "attribution": "&copy; OpenStreetMap contributors"
+      },
+      {
+        "name": "Satellite (Hybrid)",
+        "url": "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+        "attribution": "&copy; Google"
+      },
+      {
+        "name": "Satellite (USGS)",
+        "url": "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}",
+        "attribution": "USGS"
+      }
+    ]
+  },
+  "layers": [
+    {
+      "name": "Community Audio Walk",
+      "file": "data/layers/community_audio_walk.geojson",
+      "layerType": "simple",
+      "style": {
+        "color": "#b42814",
+        "weight": 3,
+        "fillColor": "#f99f7d",
+        "fillOpacity": 0.5
+      },
+      "pointStyle": {
+        "radius": 7,
+        "fillColor": "#b42814",
+        "color": "#fff4e9",
+        "weight": 1,
+        "fillOpacity": 0.95
+      }
+    },
+    {
+      "name": "Places of Reflection",
+      "file": "data/layers/places_of_reflection.geojson",
+      "layerType": "simple",
+      "style": {
+        "color": "#1f5b65",
+        "weight": 2,
+        "fillColor": "#77c9c0",
+        "fillOpacity": 0.55
+      },
+      "pointStyle": {
+        "radius": 8,
+        "fillColor": "#1f5b65",
+        "color": "#f8fffd",
+        "weight": 1,
+        "fillOpacity": 0.95
+      }
+    }
+  ]
+}

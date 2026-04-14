@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-04-09T00:00:00.000Z",
+  "world": {
+    "width": 2800,
+    "height": 1800,
+    "scale": 1,
+    "scrollLeft": 0,
+    "scrollTop": 0
+  },
+  "connectors": [
+    {
+      "from": "note-panel-1-pin",
+      "to": "note-panel-2-pin"
+    }
+  ],
+  "panels": [
+    {
+      "type": "note",
+      "panelId": "note-panel-1",
+      "left": 120,
+      "top": 120,
+      "width": 520,
+      "height": 240,
+      "title": "Countermapping Viewer Template",
+      "text": "Replace this sample with your own file. Upload your exported countermapping-board.json into data/boards, then use the URL with ?board=data/boards/your-file.json&mode=view"
+    },
+    {
+      "type": "note",
+      "panelId": "note-panel-2",
+      "left": 780,
+      "top": 420,
+      "width": 500,
+      "height": 220,
+      "title": "Interactive Features",
+      "text": "Viewers can pan, zoom, open map popups, and play audio/video embedded in popup media links."
+    }
+  ]
+}

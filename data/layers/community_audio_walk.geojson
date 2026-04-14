@@ -1,0 +1,35 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "title": "Interview Point",
+        "description": "Community elder describing migration histories.",
+        "popupType": "audio",
+        "mediaUrl": "https://upload.wikimedia.org/wikipedia/commons/transcoded/4/48/Marking_of_the_Infantry_Assault_Badge.ogg/Marking_of_the_Infantry_Assault_Badge.ogg.mp3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-73.9903, 40.7259]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "title": "Walking Route",
+        "description": "Path used for collaborative audio storytelling.",
+        "popupType": "text"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-73.9958, 40.7312],
+          [-73.9915, 40.729],
+          [-73.9878, 40.7252],
+          [-73.9849, 40.7214]
+        ]
+      }
+    }
+  ]
+}
