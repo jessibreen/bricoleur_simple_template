@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# One-command local start for non-coders.
-if [[ ! -d .venv ]]; then
-  echo "No .venv found. Creating one now..."
-  ./scripts/setup_venv.sh
-fi
-
-source .venv/bin/activate
-exec python scripts/serve.py
+# One-command local preview. Serves the repository root at http://127.0.0.1:8000/
+cd "$(dirname "$0")/.."
+exec python3 scripts/serve.py

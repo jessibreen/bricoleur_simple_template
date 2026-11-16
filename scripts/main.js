@@ -13,6 +13,9 @@ const annotationColorInput = document.getElementById("annotation-color");
 const annotationSizeInput = document.getElementById("annotation-size");
 const undoAnnotationBtn = document.getElementById("undo-annotation");
 const clearAnnotationsBtn = document.getElementById("clear-annotations");
+const deleteAnnotationBtn = document.getElementById("delete-annotation");
+const annotationFillInput = document.getElementById("annotation-fill");
+const modeToggleBtn = document.getElementById("mode-toggle-btn");
 const annotationInputPopover = document.getElementById("annotation-input-popover");
 const annotationInputField = document.getElementById("annotation-input-field");
 const annotationInputApplyBtn = document.getElementById("annotation-input-apply");
@@ -61,8 +64,24 @@ const state = {
     dragLastX: 0,
     dragLastY: 0,
     previewPoint: null,
+    fill: true,
+    draft: null,          // area (polygon) still being drawn
+    editingId: null,      // text label currently being re-edited
   },
+  currentBaselayerName: null,
+  cleanFingerprint: null, // board contents at last load / download
+  everEdited: false,
+  boardView: null,        // map position saved in the loaded board
+  userTouchedMap: false,
+  lastAutosaveFingerprint: null,
+  restorePromptOpen: false,
+  autosaveFailed: false,
 };
+
+// Tools where you drag from one corner/end to the other.
+const DRAG_SHAPE_TOOLS = new Set(["line", "arrow", "rect", "ellipse"]);
+// Annotation types stored as a list of map points.
+const POINT_LIST_TYPES = new Set(["path", "line", "arrow", "rect", "ellipse", "polygon"]);
 
 const PALETTES = {
   "blue-5":    ["#eff3ff", "#bdd7e7", "#6baed6", "#3182bd", "#08519c"],
@@ -81,6 +100,62 @@ function escapeHtml(str) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+// ── On-screen load problems ───────────────────────────────────────────────────
+// Shows a plain-language notice on the map when a file can't be loaded, so a
+// wrong path or a typo in the config doesn't just leave the map empty.
+function showLoadProblem(message) {
+  // eslint-disable-next-line no-console
+  console.error(message);
+
+  let box = document.getElementById("load-problems");
+  if (!box) {
+    box = document.createElement("div");
+    box.id = "load-problems";
+    box.className = "load-problems";
+    box.setAttribute("role", "alert");
+
+    const heading = document.createElement("strong");
+    heading.textContent = "Something didn't load";
+    box.appendChild(heading);
+
+    const list = document.createElement("ul");
+    box.appendChild(list);
+
+    const close = document.createElement("button");
+    close.type = "button";
+    close.className = "load-problems__close";
+    close.setAttribute("aria-label", "Dismiss");
+    close.textContent = "×";
+    close.addEventListener("click", () => box.remove());
+    box.appendChild(close);
+
+    mapContainer.appendChild(box);
+  }
+
+  const item = document.createElement("li");
+  item.textContent = message.charAt(0).toUpperCase() + message.slice(1);
+  box.querySelector("ul").appendChild(item);
+}
+
+// Fetches and parses a JSON file, throwing an error whose message says what
+// went wrong in terms a non-programmer can act on.
+async function fetchJsonFile(path, whatItIs) {
+  let res;
+  try {
+    res = await fetch(path);
+  } catch {
+    throw new Error(`Couldn't reach ${whatItIs} at "${path}". Check your connection and reload.`);
+  }
+  if (!res.ok) {
+    throw new Error(`Couldn't find ${whatItIs} at "${path}". Check the spelling of the path, including capital letters.`);
+  }
+  try {
+    return JSON.parse(await res.text());
+  } catch (error) {
+    throw new Error(`${whatItIs} at "${path}" isn't valid JSON (${error.message}). Look for a missing comma, quote or bracket.`);
+  }
 }
 
 // ── GeoJSON popup HTML (for data layer markers) ───────────────────────────────
@@ -495,7 +570,9 @@ function clamp(value, min, max) {
 
 function getCardZoomWindow(card) {
   const anchorZoom = Number.isFinite(card.anchorZoom) ? card.anchorZoom : state.map.getZoom();
-  return { min: anchorZoom - 1, max: anchorZoom + 1 };
+  // Pinned cards stay open when zooming in; they tuck away only when zoomed
+  // far enough out that they would crowd the map.
+  return { min: anchorZoom - 2, max: Infinity };
 }
 
 function isAnchoredCardVisible(card) {
@@ -553,16 +630,22 @@ function clearAnnotations() {
   const { ctx, data } = state.annotation;
   if (!ctx) return;
   data.length = 0;
+  state.annotation.draft = null;
+  state.annotation.selectedId = null;
+  state.annotation.editingId = null;
   const rect = mapEl.getBoundingClientRect();
   ctx.clearRect(0, 0, rect.width, rect.height);
+  deleteAnnotationBtn.disabled = true;
 }
 
 function setAnnotationTool(tool) {
   if (state.annotation.activeTool !== tool) {
     hideAnnotationInputPopover();
+    finishPolygonDraft();
     state.annotation.previewPoint = null;
   }
   state.annotation.activeTool = tool;
+  document.body.classList.toggle("polygon-mode", tool === "polygon");
   for (const btn of annotationToolbar.querySelectorAll(".tool-btn")) {
     btn.classList.toggle("is-active", btn.dataset.tool === tool);
   }
@@ -589,40 +672,37 @@ function updateAnnotationInteractivity() {
   const { activeTool, toolsVisible } = state.annotation;
   const enabled = !state.isViewMode && toolsVisible && activeTool !== null && state.mode !== "pin-card";
   annotationLayer.classList.toggle("is-active", enabled);
-  if (!enabled) {
+  if (!enabled || activeTool === "select") {
     annotationCanvas.style.cursor = "default";
-  } else if (activeTool === "draw") {
+  } else {
     annotationCanvas.style.cursor = "crosshair";
   }
 }
 
-function getStrokeWidth(mode, size) {
-  return size;
-}
-
 function updateAnnotationCursor(point) {
-  if (state.isViewMode || !state.annotation.toolsVisible) {
+  const a = state.annotation;
+  if (state.isViewMode || !a.toolsVisible) {
     annotationCanvas.style.cursor = "default";
     return;
   }
 
-  if (state.annotation.draggingId) {
+  if (a.draggingId) {
     annotationCanvas.style.cursor = "grabbing";
     return;
   }
 
-  const hit = hitTestAnyAnnotation(point);
-  if (hit) {
+  const tool = a.activeTool;
+  if (tool === "select") {
+    annotationCanvas.style.cursor = hitTestAnyAnnotation(point) ? "grab" : "default";
+    return;
+  }
+
+  if ((tool === "text" || tool === "stamp") && hitTestTextOrStamp(point)) {
     annotationCanvas.style.cursor = "grab";
     return;
   }
 
-  if (state.annotation.activeTool === "draw" || state.annotation.activeTool === "text" || state.annotation.activeTool === "stamp") {
-    annotationCanvas.style.cursor = "crosshair";
-    return;
-  }
-
-  annotationCanvas.style.cursor = "default";
+  annotationCanvas.style.cursor = tool ? "crosshair" : "default";
 }
 
 function forwardWheelToMap(ev) {
@@ -654,51 +734,95 @@ function getCanvasPoint(ev) {
   };
 }
 
-function drawStrokeSegment(x1, y1, x2, y2, mode, color, size) {
-  const a = state.annotation;
-  if (!a.ctx) return;
-  a.ctx.save();
-  a.ctx.lineWidth = getStrokeWidth(mode, size);
-  a.ctx.strokeStyle = color;
-  a.ctx.beginPath();
-  a.ctx.moveTo(x1, y1);
-  a.ctx.lineTo(x2, y2);
-  a.ctx.stroke();
-  a.ctx.restore();
+// ── Annotation geometry helpers ───────────────────────────────────────────────
+function isPointListItem(item) {
+  return POINT_LIST_TYPES.has(item?.type) && Array.isArray(item.points);
+}
+
+function annotationFontSize(item) {
+  return Math.max(12, item.size * (item.type === "stamp" ? 3 : 2));
+}
+
+function shapeScreenPoints(item) {
+  return item.points.map(annotationLatLngToPoint);
+}
+
+function boundsOfPoints(pts) {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const p of pts) {
+    minX = Math.min(minX, p.x);
+    minY = Math.min(minY, p.y);
+    maxX = Math.max(maxX, p.x);
+    maxY = Math.max(maxY, p.y);
+  }
+  return { minX, minY, maxX, maxY };
+}
+
+function distanceBetween(a, b) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function distanceToSegment(p, a, b) {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const lengthSq = dx * dx + dy * dy;
+  if (!lengthSq) return distanceBetween(p, a);
+  const t = clamp(((p.x - a.x) * dx + (p.y - a.y) * dy) / lengthSq, 0, 1);
+  return distanceBetween(p, { x: a.x + t * dx, y: a.y + t * dy });
+}
+
+// ── Text labels ───────────────────────────────────────────────────────────────
+function showInlineTextInput(point, fontSize, value) {
+  const pad = 4;
+  const width = Math.max(fontSize * 3, (value || "").length * fontSize * 0.62 + fontSize);
+
+  annotationInlineInput.value = value || "";
+  annotationInlineInput.classList.remove("is-hidden");
+  annotationInlineInput.style.left = `${point.x - pad}px`;
+  annotationInlineInput.style.top = `${point.y - fontSize - pad}px`;
+  annotationInlineInput.style.width = `${width + pad * 2}px`;
+  annotationInlineInput.style.height = `${fontSize + pad * 2}px`;
+  annotationInlineInput.style.fontSize = `${fontSize}px`;
+  annotationInlineInput.focus();
+  annotationInlineInput.select();
 }
 
 function placeTextAnnotation(point, mode) {
   const a = state.annotation;
   a.pendingTextLatLng = annotationPointToLatLng(point);
   a.pendingTextMode = mode;
+  a.editingId = null;
   a.selectedId = null;
   a.previewPoint = null;
   renderAnnotations();
+  showInlineTextInput(point, Math.max(12, a.size * (mode === "stamp" ? 3 : 2)), "");
+}
 
-  // Show inline input at preview location
-  annotationInlineInput.value = "";
-  annotationInlineInput.classList.remove("is-hidden");
-  
-  const fontSize = Math.max(12, a.size * (mode === "stamp" ? 3 : 2));
-  const w = Math.max(40, fontSize * 3);
-  const h = fontSize;
-  const pad = 4;
-  
-  annotationInlineInput.style.left = `${point.x - pad}px`;
-  annotationInlineInput.style.top = `${point.y - h - pad}px`;
-  annotationInlineInput.style.width = `${w + pad * 2}px`;
-  annotationInlineInput.style.height = `${h + pad * 2}px`;
-  annotationInlineInput.style.fontSize = `${fontSize}px`;
-  
-  annotationInlineInput.focus();
-  annotationInlineInput.select();
+// Re-open an existing text label (or stamp) for editing in place.
+function editTextAnnotation(item) {
+  const a = state.annotation;
+  a.pendingTextLatLng = { ...item.latlng };
+  a.pendingTextMode = item.type;
+  a.editingId = item.id;
+  a.selectedId = null;
+  a.draggingId = null;
+  a.previewPoint = null;
+  renderAnnotations();
+  showInlineTextInput(annotationLatLngToPoint(item.latlng), annotationFontSize(item), item.text || "");
 }
 
 function hideAnnotationInputPopover() {
+  const wasEditing = state.annotation.editingId !== null;
   annotationInputPopover.classList.add("is-hidden");
   annotationInlineInput.classList.add("is-hidden");
   state.annotation.pendingTextLatLng = null;
   state.annotation.pendingTextMode = null;
+  state.annotation.editingId = null;
+  if (wasEditing) renderAnnotations();
+}
+
+function isInlineTextInputOpen() {
+  return !annotationInlineInput.classList.contains("is-hidden");
 }
 
 function commitAnnotationTextFromPopover() {
@@ -706,46 +830,113 @@ function commitAnnotationTextFromPopover() {
   if (!a.ctx || !a.pendingTextLatLng || !a.pendingTextMode) return;
 
   // Use inline input if visible, otherwise fall back to popover input
-  const textValue = !annotationInlineInput.classList.contains("is-hidden")
+  const textValue = isInlineTextInputOpen()
     ? annotationInlineInput.value.trim()
     : annotationInputField.value.trim();
-  
+
+  if (a.editingId) {
+    const existing = a.data.find((item) => item.id === a.editingId);
+    if (existing) {
+      if (textValue) existing.text = textValue;
+      else a.data = a.data.filter((item) => item !== existing);
+    }
+    hideAnnotationInputPopover();
+    renderAnnotations();
+    return;
+  }
+
   if (!textValue) {
     hideAnnotationInputPopover();
     return;
   }
 
-  const created = {
+  a.data.push({
     id: `ann-${a.nextId++}`,
     type: a.pendingTextMode,
     latlng: { ...a.pendingTextLatLng },
     text: textValue,
     color: a.color,
     size: a.size,
-  };
-  a.data.push(created);
+  });
   a.selectedId = null;
-  renderAnnotations();
-
   hideAnnotationInputPopover();
+  renderAnnotations();
 }
 
 function placeStampAnnotation(point) {
   const a = state.annotation;
   const text = (a.stampText || "📍").trim() || "📍";
-  const created = {
+  a.data.push({
     id: `ann-${a.nextId++}`,
     type: "stamp",
     latlng: annotationPointToLatLng(point),
     text,
     color: a.color,
     size: a.size,
-  };
-  a.data.push(created);
+  });
   a.selectedId = null;
   renderAnnotations();
 }
 
+// ── Area (polygon) tool ───────────────────────────────────────────────────────
+// Each click adds a corner. Double-click, Enter, or clicking the first corner
+// again closes the area.
+function addPolygonPoint(point) {
+  const a = state.annotation;
+  const latlng = annotationPointToLatLng(point);
+
+  if (!a.draft) {
+    a.draft = {
+      id: `ann-${a.nextId++}`,
+      type: "polygon",
+      color: a.color,
+      size: a.size,
+      fill: a.fill,
+      points: [latlng],
+    };
+    a.data.push(a.draft);
+    a.selectedId = null;
+    a.previewPoint = point;
+    renderAnnotations();
+    return;
+  }
+
+  const pts = shapeScreenPoints(a.draft);
+  if (pts.length >= 3 && distanceBetween(point, pts[0]) <= 10) {
+    finishPolygonDraft();
+    return;
+  }
+  // Ignore the second click of a double-click landing on the same spot.
+  if (distanceBetween(point, pts[pts.length - 1]) < 4) return;
+
+  a.draft.points.push(latlng);
+  renderAnnotations();
+}
+
+function finishPolygonDraft() {
+  const a = state.annotation;
+  if (!a.draft) return;
+  const draft = a.draft;
+  a.draft = null;
+  a.previewPoint = null;
+  // An area needs at least three corners; anything less is discarded.
+  if (draft.points.length < 3) {
+    a.data = a.data.filter((item) => item !== draft);
+  }
+  renderAnnotations();
+}
+
+function cancelPolygonDraft() {
+  const a = state.annotation;
+  if (!a.draft) return;
+  const draft = a.draft;
+  a.draft = null;
+  a.previewPoint = null;
+  a.data = a.data.filter((item) => item !== draft);
+  renderAnnotations();
+}
+
+// ── Hit testing ───────────────────────────────────────────────────────────────
 function hitTestTextOrStamp(point) {
   const a = state.annotation;
   if (!a.ctx) return null;
@@ -754,7 +945,7 @@ function hitTestTextOrStamp(point) {
     const item = a.data[i];
     if (item.type !== "text" && item.type !== "stamp") continue;
     const pt = annotationLatLngToPoint(item.latlng);
-    const fontSize = Math.max(12, item.size * (item.type === "stamp" ? 3 : 2));
+    const fontSize = annotationFontSize(item);
     a.ctx.save();
     a.ctx.font = `${fontSize}px "Space Grotesk", sans-serif`;
     const w = a.ctx.measureText(item.text || "").width;
@@ -771,18 +962,30 @@ function hitTestTextOrStamp(point) {
   return null;
 }
 
-function hitTestPath(point) {
+function hitTestShape(point) {
   const a = state.annotation;
 
   for (let i = a.data.length - 1; i >= 0; i -= 1) {
     const item = a.data[i];
-    if (item.type !== "path" || !Array.isArray(item.points)) continue;
-    const radius = Math.max(8, item.size * 1.25);
+    if (!isPointListItem(item) || !item.points.length || item === a.draft) continue;
 
-    const hit = item.points.some((p) => {
-      const sp = annotationLatLngToPoint(p);
-      return (sp.x - point.x) ** 2 + (sp.y - point.y) ** 2 <= radius ** 2;
-    });
+    const pts = shapeScreenPoints(item);
+    const tolerance = Math.max(8, item.size);
+    let hit = false;
+
+    if (item.type === "path" || item.type === "line" || item.type === "arrow") {
+      if (pts.length === 1) {
+        hit = distanceBetween(point, pts[0]) <= tolerance;
+      }
+      for (let j = 1; j < pts.length && !hit; j += 1) {
+        hit = distanceToSegment(point, pts[j - 1], pts[j]) <= tolerance;
+      }
+    } else {
+      // Boxes, circles and areas: anywhere inside their outline counts.
+      const b = boundsOfPoints(pts);
+      hit = point.x >= b.minX - tolerance && point.x <= b.maxX + tolerance
+        && point.y >= b.minY - tolerance && point.y <= b.maxY + tolerance;
+    }
 
     if (hit) return { item, pt: point };
   }
@@ -791,7 +994,7 @@ function hitTestPath(point) {
 }
 
 function hitTestAnyAnnotation(point) {
-  return hitTestTextOrStamp(point) || hitTestPath(point);
+  return hitTestTextOrStamp(point) || hitTestShape(point);
 }
 
 function deleteSelectedAnnotation() {
@@ -802,15 +1005,13 @@ function deleteSelectedAnnotation() {
   renderAnnotations();
 }
 
+// ── Drawing ───────────────────────────────────────────────────────────────────
 function drawTextPreviewBox(point, toolType, size, color) {
   const a = state.annotation;
   if (!a.ctx) return;
 
   const fontSize = Math.max(12, size * (toolType === "stamp" ? 3 : 2));
-  
-  // Estimate text width for preview - use a sample or just show box
-  // We'll show an empty box with the height of the font
-  const w = Math.max(40, fontSize * 3); // Reasonable preview width
+  const w = Math.max(40, fontSize * 3);
   const h = fontSize;
   const pad = 4;
 
@@ -818,11 +1019,126 @@ function drawTextPreviewBox(point, toolType, size, color) {
   a.ctx.strokeStyle = color;
   a.ctx.lineWidth = 2;
   a.ctx.globalAlpha = 0.5;
-  
-  // Draw box with clearance like selected text boxes
   a.ctx.strokeRect(point.x - pad, point.y - h - pad, w + pad * 2, h + pad * 2);
-  
   a.ctx.restore();
+}
+
+function drawSelectionBox(ctx, bounds, pad) {
+  ctx.save();
+  ctx.strokeStyle = "rgba(230, 57, 70, 0.95)";
+  ctx.lineWidth = 1.25;
+  ctx.setLineDash([5, 4]);
+  ctx.strokeRect(
+    bounds.minX - pad,
+    bounds.minY - pad,
+    (bounds.maxX - bounds.minX) + pad * 2,
+    (bounds.maxY - bounds.minY) + pad * 2,
+  );
+  ctx.restore();
+}
+
+// Draws one line / shape annotation. `pts` are its points in screen pixels.
+function drawShape(ctx, item, pts, isDraft) {
+  ctx.save();
+  ctx.lineWidth = item.size;
+  ctx.strokeStyle = item.color;
+  ctx.fillStyle = item.color;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  const fillInside = () => {
+    if (!item.fill) return;
+    ctx.save();
+    ctx.globalAlpha = 0.2;
+    ctx.fill();
+    ctx.restore();
+  };
+
+  switch (item.type) {
+    case "path": {
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      if (pts.length === 1) ctx.lineTo(pts[0].x + 0.01, pts[0].y);
+      for (let i = 1; i < pts.length; i += 1) ctx.lineTo(pts[i].x, pts[i].y);
+      ctx.stroke();
+      break;
+    }
+    case "line":
+    case "arrow": {
+      const start = pts[0];
+      const end = pts[pts.length - 1];
+      const angle = Math.atan2(end.y - start.y, end.x - start.x);
+      const head = item.type === "arrow" ? Math.max(12, item.size * 3) : 0;
+      const length = distanceBetween(start, end);
+      // Stop the shaft short of the tip so the arrowhead stays pointed.
+      const shaftEnd = head && length > head
+        ? { x: end.x - Math.cos(angle) * head * 0.8, y: end.y - Math.sin(angle) * head * 0.8 }
+        : end;
+
+      ctx.beginPath();
+      ctx.moveTo(start.x, start.y);
+      ctx.lineTo(shaftEnd.x, shaftEnd.y);
+      ctx.stroke();
+
+      if (head && length > 1) {
+        const spread = Math.PI / 7;
+        ctx.beginPath();
+        ctx.moveTo(end.x, end.y);
+        ctx.lineTo(end.x - Math.cos(angle - spread) * head, end.y - Math.sin(angle - spread) * head);
+        ctx.lineTo(end.x - Math.cos(angle + spread) * head, end.y - Math.sin(angle + spread) * head);
+        ctx.closePath();
+        ctx.fill();
+      }
+      break;
+    }
+    case "rect": {
+      const b = boundsOfPoints(pts);
+      ctx.beginPath();
+      ctx.rect(b.minX, b.minY, b.maxX - b.minX, b.maxY - b.minY);
+      fillInside();
+      ctx.stroke();
+      break;
+    }
+    case "ellipse": {
+      const b = boundsOfPoints(pts);
+      ctx.beginPath();
+      ctx.ellipse(
+        (b.minX + b.maxX) / 2,
+        (b.minY + b.maxY) / 2,
+        Math.max(0.5, (b.maxX - b.minX) / 2),
+        Math.max(0.5, (b.maxY - b.minY) / 2),
+        0, 0, Math.PI * 2,
+      );
+      fillInside();
+      ctx.stroke();
+      break;
+    }
+    case "polygon": {
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i += 1) ctx.lineTo(pts[i].x, pts[i].y);
+      if (isDraft) {
+        // Still being drawn: rubber-band to the pointer and mark the corners.
+        const preview = state.annotation.previewPoint;
+        if (preview) ctx.lineTo(preview.x, preview.y);
+        ctx.stroke();
+        for (const p of pts) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, Math.max(4, item.size * 0.75), 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else {
+        ctx.closePath();
+        fillInside();
+        ctx.stroke();
+      }
+      break;
+    }
+    default:
+      break;
+  }
+
+  ctx.restore();
 }
 
 function renderAnnotations() {
@@ -832,38 +1148,20 @@ function renderAnnotations() {
   a.ctx.clearRect(0, 0, rect.width, rect.height);
 
   for (const item of a.data) {
-    if (item.type === "path") {
-      if (!item.points?.length) continue;
-      let minX = Infinity;
-      let minY = Infinity;
-      let maxX = -Infinity;
-      let maxY = -Infinity;
-      for (let i = 1; i < item.points.length; i += 1) {
-        const p0 = annotationLatLngToPoint(item.points[i - 1]);
-        const p1 = annotationLatLngToPoint(item.points[i]);
-        minX = Math.min(minX, p0.x, p1.x);
-        minY = Math.min(minY, p0.y, p1.y);
-        maxX = Math.max(maxX, p0.x, p1.x);
-        maxY = Math.max(maxY, p0.y, p1.y);
-        drawStrokeSegment(p0.x, p0.y, p1.x, p1.y, "draw", item.color, item.size);
-      }
-
-      if (item.id === a.selectedId && Number.isFinite(minX)) {
-        const pad = Math.max(6, item.size);
-        a.ctx.save();
-        a.ctx.strokeStyle = "rgba(230, 57, 70, 0.95)";
-        a.ctx.lineWidth = 1.25;
-        a.ctx.setLineDash([5, 4]);
-        a.ctx.strokeRect(minX - pad, minY - pad, (maxX - minX) + pad * 2, (maxY - minY) + pad * 2);
-        a.ctx.setLineDash([]);
-        a.ctx.restore();
+    if (isPointListItem(item)) {
+      if (!item.points.length) continue;
+      const pts = shapeScreenPoints(item);
+      drawShape(a.ctx, item, pts, item === a.draft);
+      if (item.id === a.selectedId) {
+        drawSelectionBox(a.ctx, boundsOfPoints(pts), Math.max(6, item.size));
       }
       continue;
     }
 
     if (item.type === "text" || item.type === "stamp") {
+      if (item.id === a.editingId) continue; // shown in the text box instead
       const p = annotationLatLngToPoint(item.latlng);
-      const fontSize = Math.max(12, item.size * (item.type === "stamp" ? 3 : 2));
+      const fontSize = annotationFontSize(item);
       a.ctx.save();
       a.ctx.fillStyle = item.color;
       a.ctx.font = `${fontSize}px "Space Grotesk", sans-serif`;
@@ -871,12 +1169,11 @@ function renderAnnotations() {
 
       if (item.id === a.selectedId) {
         const w = a.ctx.measureText(item.text || "").width;
-        const pad = 4;
-        a.ctx.strokeStyle = "rgba(230, 57, 70, 0.95)";
-        a.ctx.lineWidth = 1.25;
-        a.ctx.setLineDash([4, 3]);
-        a.ctx.strokeRect(p.x - pad, p.y - fontSize - pad, w + pad * 2, fontSize + pad * 2);
-        a.ctx.setLineDash([]);
+        drawSelectionBox(
+          a.ctx,
+          { minX: p.x, minY: p.y - fontSize, maxX: p.x + w, maxY: p.y },
+          4,
+        );
       }
 
       a.ctx.restore();
@@ -884,9 +1181,11 @@ function renderAnnotations() {
   }
 
   // Draw text preview box only for text tool while hovering
-  if (a.activeTool === "text" && a.previewPoint && !a.draggingId) {
+  if (a.activeTool === "text" && a.previewPoint && !a.draggingId && !isInlineTextInputOpen()) {
     drawTextPreviewBox(a.previewPoint, a.activeTool, a.size, a.color);
   }
+
+  deleteAnnotationBtn.disabled = !a.selectedId;
 }
 
 function serializeAnnotations() {
@@ -898,7 +1197,7 @@ function restoreAnnotations(data) {
   if (!data) return;
 
   if (Array.isArray(data)) {
-    state.annotation.data = data;
+    state.annotation.data = JSON.parse(JSON.stringify(data));
     let maxId = 0;
     for (const item of data) {
       const idNum = Number(String(item.id || "").replace("ann-", ""));
@@ -1079,6 +1378,63 @@ function renderMediaPlayer(container, url) {
   }
 }
 
+// ── Media import ───────────────────────────────────────────────────────────────
+// Files chosen with "Browse…" are stored inside the board file itself, so they
+// have to stay small: GitHub's website refuses uploads over 25 MB. Photos are
+// shrunk automatically; anything else that is large must live in the repo.
+const EMBED_AS_IS_BYTES = 300 * 1024;
+const EMBED_LIMIT_BYTES = 2 * 1024 * 1024;
+const IMAGE_MAX_EDGE = 1600;
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("That file could not be read."));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function shrinkImage(file) {
+  const sourceUrl = URL.createObjectURL(file);
+  try {
+    const image = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("That image could not be opened."));
+      img.src = sourceUrl;
+    });
+    const scale = Math.min(1, IMAGE_MAX_EDGE / Math.max(image.naturalWidth, image.naturalHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#ffffff"; // JPEG has no transparency
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL("image/jpeg", 0.85);
+  } finally {
+    URL.revokeObjectURL(sourceUrl);
+  }
+}
+
+async function importMediaFile(file) {
+  if (file.size <= EMBED_AS_IS_BYTES) return readFileAsDataUrl(file);
+
+  if (["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+    return shrinkImage(file);
+  }
+
+  if (file.size <= EMBED_LIMIT_BYTES) return readFileAsDataUrl(file);
+
+  const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+  throw new Error(
+    `This file is ${sizeMb} MB, which is too large to store inside the board. ` +
+    `Upload it to the "media" folder of your repository on GitHub, then type its path in the box above, ` +
+    `for example media/${file.name.replace(/\s+/g, "-")}`,
+  );
+}
+
 // ── Card element builder ───────────────────────────────────────────────────────
 function buildCardEl(cardId, cardType, kind, title) {
   const el = document.createElement("div");
@@ -1149,17 +1505,19 @@ function buildCardEl(cardId, cardType, kind, title) {
     fileInput.addEventListener("change", () => {
       const file = fileInput.files[0];
       if (!file) return;
-      if (file.type.startsWith("video/") && file.size > 50 * 1024 * 1024) {
-        player.innerHTML = `<p class="card-media-hint">Video files are too large to embed. Upload the file to your repo and use its path/URL instead.</p>`;
-        fileInput.value = "";
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        urlInput.value = ev.target.result;
-        renderMediaPlayer(player, ev.target.result);
-      };
-      reader.readAsDataURL(file);
+      fileInput.value = "";
+      importMediaFile(file)
+        .then((dataUrl) => {
+          urlInput.value = dataUrl;
+          renderMediaPlayer(player, dataUrl);
+        })
+        .catch((error) => {
+          player.innerHTML = "";
+          const hint = document.createElement("p");
+          hint.className = "card-media-hint";
+          hint.textContent = error.message;
+          player.appendChild(hint);
+        });
     });
   }
 
@@ -1220,8 +1578,14 @@ function createFloatingCard(cardType, options = {}) {
   cardsLayer.appendChild(el);
 
   const mapRect = mapEl.getBoundingClientRect();
-  const x = options.screenX ?? (mapRect.width  / 2 - 130);
-  const y = options.screenY ?? (mapRect.height / 2 - 80);
+  // Boards store floating cards as a fraction of the map area so they land in
+  // the same relative spot on any screen; older boards only have pixels.
+  const x = Number.isFinite(options.xPct)
+    ? options.xPct * mapRect.width
+    : (options.screenX ?? (mapRect.width  / 2 - 130));
+  const y = Number.isFinite(options.yPct)
+    ? options.yPct * mapRect.height
+    : (options.screenY ?? (mapRect.height / 2 - 80));
   el.style.left = `${x}px`;
   el.style.top  = `${y}px`;
 
@@ -1241,8 +1605,24 @@ function createFloatingCard(cardType, options = {}) {
   updateCardPinButton(card);
   setCardMinimized(card, !!options.minimized);
   wireDragCard(el, id);
+  keepFloatingCardOnScreen(card);
 
   return card;
+}
+
+// Floating cards must never sit outside the visible map area (for example
+// when a board made on a wide screen is opened on a phone).
+function keepFloatingCardOnScreen(card) {
+  if (card.kind !== "float") return;
+  const mapRect = mapEl.getBoundingClientRect();
+  if (!mapRect.width || !mapRect.height) return;
+  const width = card.el.offsetWidth || 260;
+  const left = clamp(parseFloat(card.el.style.left) || 0, 0, Math.max(0, mapRect.width - width));
+  const top = clamp(parseFloat(card.el.style.top) || 0, 0, Math.max(0, mapRect.height - 44));
+  card.el.style.left = `${left}px`;
+  card.el.style.top = `${top}px`;
+  card.screenX = left;
+  card.screenY = top;
 }
 
 function removeCard(cardId) {
@@ -1417,7 +1797,15 @@ function togglePinForCard(cardId) {
 // ── View mode ───────────────────────────────────────────────────────────────────
 function setViewMode(enabled) {
   state.isViewMode = enabled;
+  if (!enabled) state.everEdited = true;
   document.body.classList.toggle("view-mode", enabled);
+
+  // The same button switches between looking at the map and editing it.
+  modeToggleBtn.textContent = enabled ? "Edit" : "Preview";
+  modeToggleBtn.title = enabled
+    ? "Open the editing tools. Changes stay in this browser until you download and publish them."
+    : "See the map the way visitors will";
+  modeToggleBtn.hidden = enabled && state.mapConfig?.showEditButton === false;
 
   setToolsVisible(!enabled);
 
@@ -1465,11 +1853,18 @@ function serializeBoard() {
       cardType: card.cardType,
       title:    el.querySelector(".card-title-input")?.value || "",
       minimized: !!card.minimized,
-      screenX:  parseFloat(el.style.left) || 0,
-      screenY:  parseFloat(el.style.top)  || 0,
       pinId:    card.pinId || null,
     };
 
+    if (card.kind === "float") {
+      const mapRect = mapEl.getBoundingClientRect();
+      entry.screenX = parseFloat(el.style.left) || 0;
+      entry.screenY = parseFloat(el.style.top)  || 0;
+      if (mapRect.width && mapRect.height) {
+        entry.xPct = Number((entry.screenX / mapRect.width).toFixed(4));
+        entry.yPct = Number((entry.screenY / mapRect.height).toFixed(4));
+      }
+    }
     if (card.kind === "anchor") entry.latlng = card.latlng;
     if (card.kind === "anchor") {
       entry.anchorZoom = Number.isFinite(card.anchorZoom) ? card.anchorZoom : state.map.getZoom();
@@ -1487,20 +1882,175 @@ function serializeBoard() {
   return {
     schemaVersion: 1,
     generatedAt:   new Date().toISOString(),
-    map:   { center: { lat: center.lat, lng: center.lng }, zoom: state.map.getZoom() },
+    map: {
+      center: { lat: center.lat, lng: center.lng },
+      zoom: state.map.getZoom(),
+      // The visible area and screen size, so a smaller screen can zoom out
+      // just enough to show everything the author had in view.
+      bounds: [
+        [state.map.getBounds().getSouth(), state.map.getBounds().getWest()],
+        [state.map.getBounds().getNorth(), state.map.getBounds().getEast()],
+      ],
+      size: [state.map.getSize().x, state.map.getSize().y],
+    },
+    basemap: state.currentBaselayerName,
     pins:  pinsArr,
     cards: cardsArr,
     annotations: serializeAnnotations(),
   };
 }
 
+// Download filenames follow the map title set in data/map-config.json.
+function fileSlug() {
+  const slug = String(state.mapConfig?.title || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return slug || "map";
+}
+
+// ── Unsaved-work protection ────────────────────────────────────────────────────
+// A "fingerprint" is the board's content without the things that change just
+// by looking around (map position, background), so panning never counts as an
+// edit.
+function fingerprintOf(board) {
+  const copy = { ...board };
+  delete copy.generatedAt;
+  delete copy.map;
+  delete copy.basemap;
+  return JSON.stringify(copy);
+}
+
+function markBoardClean() {
+  state.cleanFingerprint = fingerprintOf(serializeBoard());
+}
+
+function hasUnsavedChanges() {
+  if (!state.map || !state.everEdited || state.cleanFingerprint === null) return false;
+  return fingerprintOf(serializeBoard()) !== state.cleanFingerprint;
+}
+
+const AUTOSAVE_KEY = `bricoleur-autosave:${window.location.pathname}`;
+const AUTOSAVE_EVERY_MS = 4000;
+
+function clearAutosave() {
+  try { window.localStorage.removeItem(AUTOSAVE_KEY); } catch { /* storage unavailable */ }
+}
+
+function readAutosave() {
+  try {
+    const saved = JSON.parse(window.localStorage.getItem(AUTOSAVE_KEY) || "null");
+    return saved?.board ? saved : null;
+  } catch {
+    return null;
+  }
+}
+
+// Keeps a backup copy in this browser while editing, so a closed tab or a
+// crash doesn't lose the session.
+function autosaveTick() {
+  if (state.isViewMode || state.restorePromptOpen || !state.map) return;
+  const board = serializeBoard();
+  const fingerprint = fingerprintOf(board);
+
+  if (fingerprint === state.cleanFingerprint) {
+    if (state.lastAutosaveFingerprint) clearAutosave();
+    state.lastAutosaveFingerprint = null;
+    return;
+  }
+  if (fingerprint === state.lastAutosaveFingerprint) return;
+
+  try {
+    window.localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({ savedAt: new Date().toISOString(), board }));
+    state.lastAutosaveFingerprint = fingerprint;
+  } catch {
+    // Usually the browser's storage limit, hit by photos stored in the board.
+    if (!state.autosaveFailed) {
+      state.autosaveFailed = true;
+      showPrompt(
+        "This board is too large to back up in this browser. Use Download JSON often so you don't lose work.",
+        [{ label: "OK" }],
+      );
+    }
+  }
+}
+
+// Small message bar with buttons, shown over the bottom of the map.
+function showPrompt(message, actions = []) {
+  const bar = document.createElement("div");
+  bar.className = "prompt-bar";
+  bar.setAttribute("role", "alertdialog");
+
+  const text = document.createElement("span");
+  text.textContent = message;
+  bar.appendChild(text);
+
+  for (const action of actions) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = action.label;
+    if (action.primary) btn.classList.add("is-active");
+    btn.addEventListener("click", () => {
+      bar.remove();
+      action.onClick?.();
+    });
+    bar.appendChild(btn);
+  }
+
+  mapContainer.appendChild(bar);
+  return bar;
+}
+
+// If this browser holds work that was never downloaded, offer it back.
+function offerAutosaveRestore() {
+  if (state.isViewMode || state.restorePromptOpen) return;
+  const saved = readAutosave();
+  if (!saved) return;
+  if (fingerprintOf(saved.board) === fingerprintOf(serializeBoard())) return;
+
+  const when = new Date(saved.savedAt);
+  const whenText = Number.isNaN(when.getTime())
+    ? "an earlier session"
+    : when.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+
+  state.restorePromptOpen = true;
+  showPrompt(`This browser has unsaved work from ${whenText}.`, [
+    {
+      label: "Restore it",
+      primary: true,
+      onClick: async () => {
+        await applyBoard(saved.board);
+        state.restorePromptOpen = false;
+      },
+    },
+    {
+      label: "Discard",
+      onClick: () => {
+        clearAutosave();
+        state.restorePromptOpen = false;
+      },
+    },
+  ]);
+}
+
 function downloadJson() {
   const data = serializeBoard();
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  markBoardClean();
+  clearAutosave();
+  state.lastAutosaveFingerprint = null;
+  if (blob.size > 20 * 1024 * 1024) {
+    const sizeMb = (blob.size / (1024 * 1024)).toFixed(0);
+    window.alert(
+      `This board file is ${sizeMb} MB. GitHub's website only accepts uploads up to 25 MB.\n\n` +
+      "To make it smaller, upload large photos, audio or video to the \"media\" folder of your repository " +
+      "and type their path into the media note instead of using Browse.",
+    );
+  }
   const url  = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href     = url;
-  link.download = "countermapping-board.json";
+  link.download = `${fileSlug()}-board.json`;
   link.click();
   URL.revokeObjectURL(url);
 }
@@ -1563,7 +2113,7 @@ async function downloadImage() {
 
     const link = document.createElement("a");
     link.href = canvas.toDataURL("image/png");
-    link.download = `countermapping-${new Date().toISOString().slice(0, 10)}.png`;
+    link.download = `${fileSlug()}-${new Date().toISOString().slice(0, 10)}.png`;
     link.click();
   } catch (error) {
     window.alert("Could not export image. If map tiles are blocked by CORS, try again after panning/zooming.");
@@ -1579,7 +2129,7 @@ async function downloadImage() {
 // ── Board restore ──────────────────────────────────────────────────────────────
 function clearBoard() {
   exitDropPinMode();
-  setToolsVisible(true);
+  setToolsVisible(!state.isViewMode);
   for (const pin  of state.pins.values())  pin.marker.remove();
   for (const card of state.cards.values()) card.el.remove();
   state.pins.clear();
@@ -1614,22 +2164,52 @@ function restoreCardContent(card, data) {
   }
 }
 
+// Positions the map the way the board's author left it. On a screen smaller
+// than the author's, zoom out just enough to show everything they had in view.
+function applyBoardView() {
+  const view = state.boardView;
+  if (!view || !state.map) return;
+
+  state.map.invalidateSize({ animate: false });
+  const here = state.map.getSize();
+  const [authoredW, authoredH] = Array.isArray(view.size) ? view.size : [];
+  const smallerScreen = Array.isArray(view.bounds)
+    && Number.isFinite(authoredW) && Number.isFinite(authoredH)
+    && (here.x < authoredW * 0.9 || here.y < authoredH * 0.9);
+
+  if (smallerScreen) {
+    state.map.fitBounds(view.bounds, { animate: false });
+  } else {
+    state.map.setView([view.center.lat, view.center.lng], view.zoom, { animate: false });
+  }
+}
+
 async function applyBoard(data) {
   clearBoard();
 
-  if (data.map) {
-    state.map.setView(
-      [data.map.center.lat, data.map.center.lng],
-      data.map.zoom,
-      { animate: false }
-    );
+  if (data.basemap) {
+    const baselayers = state.mapConfig?.map?.baselayers || [];
+    const idx = baselayers.findIndex((bl) => bl.name === data.basemap);
+    if (idx >= 0) {
+      setBaselayer(baselayers[idx]);
+      updateBaselayerMenu(idx);
+    }
   }
+
+  state.boardView = data.map || null;
+  state.userTouchedMap = false;
+  applyBoardView();
+
+  // On a phone, open notes collapsed so the map itself is visible first.
+  const collapseAll = state.isViewMode && state.map.getSize().x < 700;
+  const startMinimized = (cd) => collapseAll || cd.minimized;
 
   // Create floating cards first (no geo dependency)
   for (const cd of data.cards || []) {
     if (cd.kind !== "float") continue;
     const card = createFloatingCard(cd.cardType, {
-      id: cd.id, title: cd.title, screenX: cd.screenX, screenY: cd.screenY, minimized: cd.minimized,
+      id: cd.id, title: cd.title, screenX: cd.screenX, screenY: cd.screenY,
+      xPct: cd.xPct, yPct: cd.yPct, minimized: startMinimized(cd),
     });
     restoreCardContent(card, cd);
   }
@@ -1641,7 +2221,7 @@ async function applyBoard(data) {
       id: cd.id,
       title: cd.title,
       latlng: cd.latlng,
-      minimized: cd.minimized,
+      minimized: startMinimized(cd),
       anchorZoom: cd.anchorZoom,
       forceVisible: cd.forceVisible,
     });
@@ -1661,13 +2241,15 @@ async function applyBoard(data) {
 
   restoreAnnotations(data.annotations || null);
   updateAnchoredVisibility();
-  requestAnimationFrame(() => updateAllAnchored());
+  requestAnimationFrame(() => {
+    updateAllAnchored();
+    for (const card of state.cards.values()) keepFloatingCardOnScreen(card);
+  });
 }
 
 async function loadBoardFromUrl(boardPath) {
-  const res = await fetch(boardPath);
-  if (!res.ok) throw new Error(`Cannot load board: ${boardPath}`);
-  return applyBoard(await res.json());
+  await applyBoard(await fetchJsonFile(boardPath, "the board"));
+  markBoardClean();
 }
 
 function sortLayersForRender(layers = [], mapConfig = {}) {
@@ -1716,12 +2298,21 @@ function shouldEnablePopup(layerCfg = {}, mapConfig = {}) {
 // ── Data layer loading ─────────────────────────────────────────────────────────
 async function loadDataLayers(layers, mapConfig = {}) {
   state.layerLegends = [];
+  // One canvas shared by every layer: with a canvas per layer, the topmost
+  // canvas swallows clicks and popups on the layers beneath never open.
+  const renderer = L.canvas({ padding: 0.5 });
   for (const layerCfg of layers) {
+    const layerLabel = `the layer "${layerCfg.name || "(no name)"}"`;
     try {
-      const res = await fetch(layerCfg.file);
-      if (!res.ok) continue;
-      const geojson = await res.json();
-      const renderer = L.canvas({ padding: 0.5 });
+      if (!layerCfg.file) {
+        showLoadProblem(`${layerLabel} has no "file" setting in data/map-config.json.`);
+        continue;
+      }
+      const geojson = await fetchJsonFile(layerCfg.file, layerLabel);
+      if (!getFeatures(geojson).length) {
+        showLoadProblem(`${layerLabel} at "${layerCfg.file}" loaded but has no features to draw. It needs to be a GeoJSON FeatureCollection.`);
+        continue;
+      }
       const runtime = createLayerRuntime(layerCfg, geojson);
       const popupsEnabled = shouldEnablePopup(layerCfg, mapConfig);
 
@@ -1739,8 +2330,7 @@ async function loadDataLayers(layers, mapConfig = {}) {
         },
       }).addTo(state.map);
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Layer load error:", layerCfg.name, error);
+      showLoadProblem(error.message);
     }
   }
   renderLayerLegends();
@@ -1772,6 +2362,13 @@ function wireEvents() {
       renderAnnotations();
       return;
     }
+    if (state.annotation.draft) {
+      // Step back one corner of the area being drawn.
+      state.annotation.draft.points.pop();
+      if (!state.annotation.draft.points.length) cancelPolygonDraft();
+      else renderAnnotations();
+      return;
+    }
     if (state.annotation.data.length > 0) {
       state.annotation.data.pop();
       state.annotation.selectedId = null;
@@ -1790,98 +2387,115 @@ function wireEvents() {
     });
   }
 
-  clearAnnotationsBtn.addEventListener("click", clearAnnotations);
+  clearAnnotationsBtn.addEventListener("click", () => {
+    if (!state.annotation.data.length) return;
+    if (window.confirm("Remove all drawings, labels and stamps from the map? Notes and pins are kept.")) {
+      clearAnnotations();
+    }
+  });
+
+  annotationFillInput.addEventListener("change", (ev) => {
+    state.annotation.fill = ev.target.checked;
+  });
+
+  deleteAnnotationBtn.addEventListener("click", deleteSelectedAnnotation);
+
+  const beginAnnotationDrag = (hit, point, ev) => {
+    const a = state.annotation;
+    a.selectedId = hit.item.id;
+    a.draggingId = hit.item.id;
+    a.dragDx = point.x - hit.pt.x;
+    a.dragDy = point.y - hit.pt.y;
+    a.dragLastX = point.x;
+    a.dragLastY = point.y;
+    annotationCanvas.setPointerCapture(ev.pointerId);
+  };
 
   annotationCanvas.addEventListener("pointerdown", (ev) => {
-    if (state.isViewMode) return;
-    if (!annotationInlineInput.classList.contains("is-hidden")) {
-      hideAnnotationInputPopover();
-      state.annotation.previewPoint = null;
-      renderAnnotations();
+    const a = state.annotation;
+    if (state.isViewMode || !a.toolsVisible) return;
+
+    // Clicking away from an open text box keeps what was typed.
+    if (isInlineTextInputOpen()) {
+      commitAnnotationTextFromPopover();
       ev.preventDefault();
       return;
     }
-    const tool = state.annotation.activeTool;
-    if (!state.annotation.toolsVisible) return;
 
+    const tool = a.activeTool;
+    if (!tool) return;
     const point = getCanvasPoint(ev);
-    const anyHit = hitTestAnyAnnotation(point);
 
-    if (!tool) {
-      state.annotation.selectedId = anyHit?.item?.id || null;
-      if (anyHit) {
-        if (anyHit.item.type === "text" || anyHit.item.type === "stamp") {
-          state.annotation.draggingId = anyHit.item.id;
-          state.annotation.dragDx = point.x - anyHit.pt.x;
-          state.annotation.dragDy = point.y - anyHit.pt.y;
-          state.annotation.dragLastX = point.x;
-          state.annotation.dragLastY = point.y;
-          annotationCanvas.setPointerCapture(ev.pointerId);
-        } else if (anyHit.item.type === "path") {
-          state.annotation.draggingId = anyHit.item.id;
-          state.annotation.dragLastX = point.x;
-          state.annotation.dragLastY = point.y;
-          annotationCanvas.setPointerCapture(ev.pointerId);
-        }
-      }
+    if (tool === "select") {
+      const hit = hitTestAnyAnnotation(point);
+      a.selectedId = null;
+      if (hit) beginAnnotationDrag(hit, point, ev);
       renderAnnotations();
       updateAnnotationCursor(point);
       ev.preventDefault();
       return;
     }
 
-    if (tool === "draw") {
-      state.annotation.selectedId = null;
-
-      state.annotation.isDrawing = true;
-      state.annotation.lastX = point.x;
-      state.annotation.lastY = point.y;
-      state.annotation.currentPath = {
-        id: `ann-${state.annotation.nextId++}`,
-        type: "path",
-        color: state.annotation.color,
-        size: state.annotation.size,
-        points: [annotationPointToLatLng(point)],
+    if (tool === "draw" || DRAG_SHAPE_TOOLS.has(tool)) {
+      const latlng = annotationPointToLatLng(point);
+      a.selectedId = null;
+      a.isDrawing = true;
+      a.currentPath = {
+        id: `ann-${a.nextId++}`,
+        type: tool === "draw" ? "path" : tool,
+        color: a.color,
+        size: a.size,
+        points: tool === "draw" ? [latlng] : [latlng, { ...latlng }],
       };
-      state.annotation.data.push(state.annotation.currentPath);
+      if (tool === "rect" || tool === "ellipse") a.currentPath.fill = a.fill;
+      a.data.push(a.currentPath);
       renderAnnotations();
       annotationCanvas.setPointerCapture(ev.pointerId);
       ev.preventDefault();
       return;
     }
 
-    if (tool === "text") {
-      const hit = hitTestTextOrStamp(point);
-      if (hit) {
-        state.annotation.selectedId = hit.item.id;
-        state.annotation.draggingId = hit.item.id;
-        state.annotation.dragDx = point.x - hit.pt.x;
-        state.annotation.dragDy = point.y - hit.pt.y;
-        annotationCanvas.setPointerCapture(ev.pointerId);
-        renderAnnotations();
-      } else {
-        state.annotation.selectedId = null;
-        renderAnnotations();
-        placeTextAnnotation(point, tool);
-      }
+    if (tool === "polygon") {
+      addPolygonPoint(point);
       ev.preventDefault();
       return;
     }
 
-    if (tool === "stamp") {
+    if (tool === "text" || tool === "stamp") {
       const hit = hitTestTextOrStamp(point);
       if (hit) {
-        state.annotation.selectedId = hit.item.id;
-        state.annotation.draggingId = hit.item.id;
-        state.annotation.dragDx = point.x - hit.pt.x;
-        state.annotation.dragDy = point.y - hit.pt.y;
-        annotationCanvas.setPointerCapture(ev.pointerId);
+        beginAnnotationDrag(hit, point, ev);
         renderAnnotations();
       } else {
-        state.annotation.selectedId = null;
-        placeStampAnnotation(point);
+        a.selectedId = null;
+        if (tool === "text") {
+          renderAnnotations();
+          placeTextAnnotation(point, tool);
+        } else {
+          placeStampAnnotation(point);
+        }
       }
       ev.preventDefault();
+    }
+  });
+
+  // Double-click: finish an area, or re-open a text label for editing.
+  annotationCanvas.addEventListener("dblclick", (ev) => {
+    const a = state.annotation;
+    if (state.isViewMode || !a.toolsVisible) return;
+
+    if (a.draft) {
+      finishPolygonDraft();
+      ev.preventDefault();
+      return;
+    }
+
+    if (a.activeTool === "select" || a.activeTool === "text") {
+      const hit = hitTestTextOrStamp(getCanvasPoint(ev));
+      if (hit) {
+        editTextAnnotation(hit.item);
+        ev.preventDefault();
+      }
     }
   });
 
@@ -1910,6 +2524,7 @@ function wireEvents() {
     } else if (ev.key === "Escape") {
       hideAnnotationInputPopover();
       ev.preventDefault();
+      ev.stopPropagation();
     }
   });
 
@@ -1917,63 +2532,67 @@ function wireEvents() {
   annotationInputPopover.addEventListener("wheel", forwardWheelToMap, { passive: false });
 
   annotationCanvas.addEventListener("pointermove", (ev) => {
+    const a = state.annotation;
     const point = getCanvasPoint(ev);
     updateAnnotationCursor(point);
 
-    // Update text preview position only when text tool is active
-    if (state.annotation.activeTool === "text" && !state.annotation.draggingId && state.annotation.toolsVisible) {
-      state.annotation.previewPoint = point;
-      renderAnnotations();
-      return;
-    }
-
-    // Clear preview when not using text tool
-    if (state.annotation.previewPoint) {
-      state.annotation.previewPoint = null;
-    }
-
-    if (state.annotation.draggingId) {
-      const item = state.annotation.data.find((d) => d.id === state.annotation.draggingId);
+    if (a.draggingId) {
+      const item = a.data.find((d) => d.id === a.draggingId);
       if (item) {
         if (item.type === "text" || item.type === "stamp") {
-          const newPoint = { x: point.x - state.annotation.dragDx, y: point.y - state.annotation.dragDy };
-          item.latlng = annotationPointToLatLng(newPoint);
-        } else if (item.type === "path" && Array.isArray(item.points)) {
-          const dx = point.x - state.annotation.dragLastX;
-          const dy = point.y - state.annotation.dragLastY;
+          item.latlng = annotationPointToLatLng({ x: point.x - a.dragDx, y: point.y - a.dragDy });
+        } else if (isPointListItem(item)) {
+          const dx = point.x - a.dragLastX;
+          const dy = point.y - a.dragLastY;
           item.points = item.points.map((p) => {
             const screenPoint = annotationLatLngToPoint(p);
             return annotationPointToLatLng({ x: screenPoint.x + dx, y: screenPoint.y + dy });
           });
-          state.annotation.dragLastX = point.x;
-          state.annotation.dragLastY = point.y;
+          a.dragLastX = point.x;
+          a.dragLastY = point.y;
         }
         renderAnnotations();
       }
-      updateAnnotationCursor(point);
       ev.preventDefault();
       return;
     }
 
-    if (!state.annotation.isDrawing) return;
-    const tool = state.annotation.activeTool;
-    if (tool !== "draw") return;
-    if (state.annotation.currentPath) {
-      state.annotation.currentPath.points.push(annotationPointToLatLng(point));
+    if (a.isDrawing && a.currentPath) {
+      const latlng = annotationPointToLatLng(point);
+      if (a.currentPath.type === "path") a.currentPath.points.push(latlng);
+      else a.currentPath.points[1] = latlng;
+      renderAnnotations();
+      ev.preventDefault();
+      return;
     }
 
-    renderAnnotations();
+    // Hover previews: the text box outline, or the next edge of an area.
+    if (a.toolsVisible && (a.activeTool === "text" || a.draft)) {
+      a.previewPoint = point;
+      renderAnnotations();
+      return;
+    }
 
-    state.annotation.lastX = point.x;
-    state.annotation.lastY = point.y;
-    ev.preventDefault();
+    if (a.previewPoint) {
+      a.previewPoint = null;
+      renderAnnotations();
+    }
   });
 
   const stopDrawing = () => {
-    state.annotation.isDrawing = false;
-    state.annotation.currentPath = null;
-    state.annotation.draggingId = null;
-    annotationCanvas.style.cursor = "default";
+    const a = state.annotation;
+    const shape = a.currentPath;
+    // A click without a drag leaves a zero-size shape; drop it.
+    if (a.isDrawing && shape && shape.type !== "path") {
+      const pts = shapeScreenPoints(shape);
+      if (distanceBetween(pts[0], pts[1]) < 4) {
+        a.data = a.data.filter((item) => item !== shape);
+      }
+    }
+    a.isDrawing = false;
+    a.currentPath = null;
+    a.draggingId = null;
+    renderAnnotations();
   };
   annotationCanvas.addEventListener("pointerup", stopDrawing);
   annotationCanvas.addEventListener("pointercancel", stopDrawing);
@@ -2049,6 +2668,7 @@ function wireEvents() {
     if (!file) return;
     try {
       await applyBoard(JSON.parse(await file.text()));
+      markBoardClean();
     } catch (error) {
       window.alert("Could not read board file. Please check the file format.");
       // eslint-disable-next-line no-console
@@ -2060,12 +2680,23 @@ function wireEvents() {
 
   // ── Esc cancels drop-pin mode ──────────────────────────────────────────────
   document.addEventListener("keydown", (ev) => {
-    if ((ev.key === "Delete" || ev.key === "Backspace") && state.annotation.toolsVisible && !state.isViewMode) {
+    // Keys typed into a note, title or text box belong to that box.
+    const typing = ["INPUT", "TEXTAREA", "SELECT"].includes(ev.target?.tagName);
+
+    if (!typing && ev.key === "Enter" && state.annotation.draft) {
+      finishPolygonDraft();
+      ev.preventDefault();
+      return;
+    }
+
+    if (!typing && (ev.key === "Delete" || ev.key === "Backspace") && state.annotation.toolsVisible && !state.isViewMode) {
+      if (state.annotation.selectedId) ev.preventDefault();
       deleteSelectedAnnotation();
       return;
     }
 
     if (ev.key === "Escape") {
+      cancelPolygonDraft();
       hideAnnotationInputPopover();
       exitDropPinMode();
       setAnnotationTool(null);
@@ -2074,9 +2705,46 @@ function wireEvents() {
 
   // ── Keep string SVG sized to the map container ────────────────────────────
   new ResizeObserver(() => {
+    // The map area changes size when the toolbar appears, wraps or hides;
+    // Leaflet only notices window resizes on its own.
+    state.map.invalidateSize({ animate: false });
+    // Until the visitor moves the map themselves, keep showing the author's
+    // view (covers a phone being rotated, or a slow first layout).
+    if (!state.userTouchedMap && state.isViewMode) {
+      applyBoardView();
+      if (state.map.getSize().x < 700) {
+        for (const card of state.cards.values()) {
+          if (!card.minimized) setCardMinimized(card, true);
+        }
+      }
+    }
     resizeStringLayer();
     resizeAnnotationCanvas();
+    for (const card of state.cards.values()) keepFloatingCardOnScreen(card);
   }).observe(mapEl);
+
+  for (const type of ["pointerdown", "wheel", "keydown"]) {
+    mapContainer.addEventListener(type, () => { state.userTouchedMap = true; }, { capture: true, passive: true });
+  }
+
+  // ── Switch between viewing and editing ─────────────────────────────────────
+  modeToggleBtn.addEventListener("click", () => {
+    const toView = !state.isViewMode;
+    setViewMode(toView);
+    const url = new URL(window.location.href);
+    url.searchParams.set("mode", toView ? "view" : "edit");
+    window.history.replaceState(null, "", url);
+    if (!toView) offerAutosaveRestore();
+  });
+
+  // ── Don't lose work ────────────────────────────────────────────────────────
+  window.setInterval(autosaveTick, AUTOSAVE_EVERY_MS);
+  window.addEventListener("beforeunload", (ev) => {
+    if (!hasUnsavedChanges()) return;
+    autosaveTick();
+    ev.preventDefault();
+    ev.returnValue = "";
+  });
 }
 
 // ── Baselayer management ────────────────────────────────────────────────────────
@@ -2089,6 +2757,7 @@ function setBaselayer(baselayerConfig) {
   }
 
   // Add the new tile layer and store it
+  state.currentBaselayerName = baselayerConfig.name || null;
   state.currentTileLayer = L.tileLayer(baselayerConfig.url, {
     attribution: baselayerConfig.attribution,
     maxZoom: 20,
@@ -2106,15 +2775,22 @@ function updateBaselayerMenu(activeIdx) {
 
 // ── Init ────────────────────────────────────────────────────────────────────────
 async function init() {
-  const res = await fetch("data/map-config.json");
-  state.mapConfig = await res.json();
+  state.mapConfig = await fetchJsonFile("data/map-config.json", "the map settings file");
 
   const mc = state.mapConfig.map;
+
+  const title = String(state.mapConfig.title || "").trim();
+  if (title) {
+    document.title = title;
+    const heading = document.querySelector(".header-brand h1");
+    if (heading) heading.textContent = title;
+  }
 
   state.map = L.map("map", {
     center: mc.center,
     zoom: mc.zoom,
     zoomControl: true,
+    zoomSnap: 0.25, // lets a board fit a smaller screen without overshooting
     scrollWheelZoom: true,
     touchZoom: true,
   });
@@ -2151,20 +2827,26 @@ async function init() {
   wireEvents();
   resizeStringLayer();
 
-  const params     = new URLSearchParams(window.location.search);
-  const viewParam  = params.get("mode");
-  const boardParam = params.get("board");
+  // Which board to open: one named in the link, otherwise the published
+  // board set as "defaultBoard" in data/map-config.json.
+  const params    = new URLSearchParams(window.location.search);
+  const modeParam = params.get("mode");
+  const boardPath = params.get("board") || String(state.mapConfig.defaultBoard || "").trim();
 
-  setViewMode(viewParam === "view");
+  // With a board to show, visitors see it read-only; "?mode=edit" (or the
+  // Edit button) opens the tools. With no board yet, start in the editor.
+  setViewMode(modeParam === "view" || (modeParam !== "edit" && !!boardPath));
 
-  if (boardParam) {
+  if (boardPath) {
     try {
-      await loadBoardFromUrl(boardParam);
+      await loadBoardFromUrl(boardPath);
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
+      showLoadProblem(error.message);
     }
   }
+
+  markBoardClean();
+  offerAutosaveRestore();
 }
 
-init().catch(console.error);
+init().catch((error) => showLoadProblem(error.message));

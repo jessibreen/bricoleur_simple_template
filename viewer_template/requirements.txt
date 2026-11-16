@@ -1,2 +1,0 @@
-# No third-party Python packages required.
-# This repo uses Python's built-in HTTP server for local preview.

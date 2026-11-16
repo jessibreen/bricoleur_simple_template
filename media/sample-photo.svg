@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" role="img" aria-label="Sample image">
+  <rect width="480" height="300" fill="#dbeafe"/>
+  <circle cx="380" cy="70" r="34" fill="#fde68a"/>
+  <path d="M0 230 L110 130 L190 200 L270 110 L400 230 Z" fill="#93c5fd"/>
+  <rect y="230" width="480" height="70" fill="#f8fafc"/>
+  <text x="240" y="275" text-anchor="middle" font-family="sans-serif" font-size="20" fill="#1f2937">Sample image — replace with your own</text>
+</svg>

@@ -1,0 +1,203 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-16T00:00:00.000Z",
+  "map": {
+    "center": {
+      "lat": 38.9072,
+      "lng": -77.0369
+    },
+    "zoom": 12,
+    "bounds": [
+      [
+        38.8378,
+        -77.1742
+      ],
+      [
+        38.9766,
+        -76.8996
+      ]
+    ],
+    "size": [
+      800,
+      520
+    ]
+  },
+  "basemap": "OpenStreetMap",
+  "pins": [
+    {
+      "id": "pin-1",
+      "latlng": {
+        "lat": 38.9296,
+        "lng": -77.0498
+      },
+      "cardId": "card-2"
+    },
+    {
+      "id": "pin-2",
+      "latlng": {
+        "lat": 38.8899,
+        "lng": -77.0091
+      },
+      "cardId": "card-3"
+    }
+  ],
+  "cards": [
+    {
+      "id": "card-1",
+      "kind": "float",
+      "cardType": "note",
+      "title": "About this sample board",
+      "minimized": false,
+      "pinId": null,
+      "screenX": 16,
+      "screenY": 70,
+      "xPct": 0.02,
+      "yPct": 0.13,
+      "text": "This is an example board. Notes like this one float on the screen. Notes with a pin stay attached to a place on the map. Press Edit to change it."
+    },
+    {
+      "id": "card-2",
+      "kind": "anchor",
+      "cardType": "note",
+      "title": "A pinned note",
+      "minimized": false,
+      "pinId": "pin-1",
+      "latlng": {
+        "lat": 38.975,
+        "lng": -77.02
+      },
+      "anchorZoom": 12,
+      "forceVisible": false,
+      "text": "Write an observation about this place. Replace this with your own."
+    },
+    {
+      "id": "card-3",
+      "kind": "anchor",
+      "cardType": "media",
+      "title": "A pinned media note",
+      "minimized": false,
+      "pinId": "pin-2",
+      "latlng": {
+        "lat": 38.868,
+        "lng": -77.06
+      },
+      "anchorZoom": 12,
+      "forceVisible": false,
+      "mediaUrl": "media/sample-photo.svg"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "ann-1",
+      "type": "polygon",
+      "color": "#f24e1e",
+      "size": 4,
+      "fill": true,
+      "points": [
+        {
+          "lat": 38.958,
+          "lng": -76.985
+        },
+        {
+          "lat": 38.936,
+          "lng": -76.948
+        },
+        {
+          "lat": 38.905,
+          "lng": -76.97
+        },
+        {
+          "lat": 38.915,
+          "lng": -77.0
+        },
+        {
+          "lat": 38.94,
+          "lng": -77.002
+        }
+      ]
+    },
+    {
+      "id": "ann-2",
+      "type": "arrow",
+      "color": "#f24e1e",
+      "size": 5,
+      "points": [
+        {
+          "lat": 38.955,
+          "lng": -76.905
+        },
+        {
+          "lat": 38.94,
+          "lng": -76.955
+        }
+      ]
+    },
+    {
+      "id": "ann-3",
+      "type": "text",
+      "latlng": {
+        "lat": 38.96,
+        "lng": -76.93
+      },
+      "text": "an area of interest",
+      "color": "#f24e1e",
+      "size": 8
+    },
+    {
+      "id": "ann-4",
+      "type": "ellipse",
+      "color": "#2e4057",
+      "size": 4,
+      "fill": false,
+      "points": [
+        {
+          "lat": 38.925,
+          "lng": -77.115
+        },
+        {
+          "lat": 38.895,
+          "lng": -77.075
+        }
+      ]
+    },
+    {
+      "id": "ann-5",
+      "type": "path",
+      "color": "#2e4057",
+      "size": 5,
+      "points": [
+        {
+          "lat": 38.87,
+          "lng": -77.11
+        },
+        {
+          "lat": 38.874,
+          "lng": -77.1
+        },
+        {
+          "lat": 38.869,
+          "lng": -77.09
+        },
+        {
+          "lat": 38.875,
+          "lng": -77.08
+        },
+        {
+          "lat": 38.87,
+          "lng": -77.07
+        }
+      ]
+    },
+    {
+      "id": "ann-6",
+      "type": "stamp",
+      "latlng": {
+        "lat": 38.95,
+        "lng": -77.1
+      },
+      "text": "❄️",
+      "color": "#2e4057",
+      "size": 8
+    }
+  ]
+}

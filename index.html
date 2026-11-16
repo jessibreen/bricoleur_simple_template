@@ -23,9 +23,15 @@
     <div class="header-actions">
       <div class="annotation-controls editing-only">
         <div id="annotation-toolbar" class="annotation-toolbar">
-          <button class="tool-btn" data-tool="draw" type="button">Draw</button>
-          <button class="tool-btn" data-tool="text" type="button">Text</button>
-          <button class="tool-btn" data-tool="stamp" type="button">Stamp</button>
+          <button class="tool-btn" data-tool="select" type="button" title="Click a drawing to select it, drag to move it, double-click text to edit it">Select</button>
+          <button class="tool-btn" data-tool="draw" type="button" title="Draw freehand">Draw</button>
+          <button class="tool-btn" data-tool="line" type="button" title="Drag to draw a straight line">Line</button>
+          <button class="tool-btn" data-tool="arrow" type="button" title="Drag to draw an arrow">Arrow</button>
+          <button class="tool-btn" data-tool="rect" type="button" title="Drag to draw a box">Box</button>
+          <button class="tool-btn" data-tool="ellipse" type="button" title="Drag to draw a circle or oval">Circle</button>
+          <button class="tool-btn" data-tool="polygon" type="button" title="Click to add corners, double-click to finish the area">Area</button>
+          <button class="tool-btn" data-tool="text" type="button" title="Click the map to add a text label">Text</button>
+          <button class="tool-btn" data-tool="stamp" type="button" title="Click the map to place the stamp">Stamp</button>
           <label>
             Stamp
             <input id="annotation-stamp" type="text" value="📍" aria-label="Stamp text" />
@@ -38,8 +44,13 @@
             Size
             <input id="annotation-size" type="range" min="2" max="24" value="6" aria-label="Brush size" />
           </label>
-          <button id="undo-annotation" type="button">Undo</button>
-          <button id="clear-annotations" type="button">Clear</button>
+          <label title="Shade the inside of boxes, circles and areas">
+            <input id="annotation-fill" type="checkbox" checked />
+            Fill
+          </label>
+          <button id="undo-annotation" type="button" title="Remove the most recent drawing">Undo</button>
+          <button id="delete-annotation" type="button" title="Delete the selected drawing" disabled>Delete</button>
+          <button id="clear-annotations" type="button" title="Remove all drawings">Clear</button>
         </div>
       </div>
       <!-- Create by note type first. Pinning is done per-card via "Add Pin". -->
@@ -51,6 +62,7 @@
       <button id="save-btn" class="editing-only" type="button">Download JSON</button>
       <button id="load-btn" class="editing-only" type="button">Load JSON</button>
       <input id="load-input" type="file" accept="application/json,.json" hidden />
+      <button id="mode-toggle-btn" type="button">Preview</button>
     </div>
   </header>
 
@@ -82,6 +94,11 @@
     </div>
 
     <aside id="legend-control" class="legend-control" aria-label="Map legend"></aside>
+
+    <!-- Area tool instruction banner -->
+    <div id="polygon-banner" class="drop-banner polygon-banner" aria-live="polite">
+      Click to add corners — double-click or press <kbd>Enter</kbd> to finish, <kbd>Esc</kbd> to cancel
+    </div>
 
     <!-- Drop-pin mode instruction banner -->
     <div id="drop-banner" class="drop-banner" aria-live="polite">

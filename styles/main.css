@@ -766,6 +766,93 @@ body.drop-pin-mode .drop-banner {
   display: block;
 }
 
+/* ── Area tool banner ─────────────────────────────────────────────────────── */
+body.polygon-mode:not(.view-mode) .polygon-banner {
+  display: block;
+}
+
+/* ── Prompt bar (restore unsaved work, etc.) ──────────────────────────────── */
+.prompt-bar {
+  position: absolute;
+  bottom: 4.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: max-content;
+  max-width: calc(100% - 2rem);
+  padding: 0.55rem 0.8rem;
+  background: #fff;
+  border: 1.5px solid var(--panel-border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+  font-size: 0.85rem;
+}
+
+body.is-exporting .prompt-bar {
+  display: none;
+}
+
+#mode-toggle-btn[hidden] {
+  display: none;
+}
+
+.annotation-toolbar {
+  flex-wrap: wrap;
+}
+
+.annotation-toolbar button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* ── Load problem notice ──────────────────────────────────────────────────── */
+.load-problems {
+  position: absolute;
+  top: 0.8rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1200;
+  width: min(34rem, calc(100% - 2rem));
+  padding: 0.7rem 2.2rem 0.7rem 0.9rem;
+  background: #fff5f5;
+  color: var(--ink);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.load-problems ul {
+  margin: 0.3rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.load-problems li + li {
+  margin-top: 0.3rem;
+}
+
+.load-problems__close {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.4rem;
+  border: 0;
+  background: none;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  color: inherit;
+}
+
+body.is-exporting .load-problems {
+  display: none;
+}
+
 /* ── View mode ─────────────────────────────────────────────────────────────── */
 body.view-mode .editing-only {
   display: none !important;
@@ -904,4 +991,77 @@ body.view-mode .card-media-input-row {
   max-height: 170px;
   object-fit: contain;
   margin-top: 0.3rem;
+}
+
+/* ── Small screens ────────────────────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .site-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+    padding: 0.45rem 0.6rem;
+    overflow: visible;
+  }
+
+  .header-brand h1 {
+    font-size: 1rem;
+  }
+
+  /* Viewing: title and the Edit button share one slim row. */
+  body.view-mode .site-header {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  /* Editing: the tools scroll sideways instead of pushing the map away. */
+  body:not(.view-mode) .header-actions {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 0.2rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body:not(.view-mode) .header-actions > * {
+    flex: 0 0 auto;
+  }
+
+  .annotation-toolbar {
+    flex-wrap: nowrap;
+  }
+
+  .card {
+    max-width: calc(100vw - 1.5rem);
+  }
+
+  .legend-control {
+    max-width: 55vw;
+    max-height: 35vh;
+    overflow-y: auto;
+    font-size: 0.72rem;
+  }
+
+  .baselayer-control {
+    bottom: 1.6rem;
+    left: 0.5rem;
+  }
+
+  .baselayer-control button {
+    width: 6rem;
+    padding: 0.25rem 0.45rem;
+    font-size: 0.7rem;
+  }
+
+  .view-hint {
+    width: calc(100vw - 1.5rem);
+    white-space: normal;
+    border-radius: 14px;
+    font-size: 0.78rem;
+  }
+
+  .drop-banner {
+    white-space: normal;
+    width: calc(100% - 1.5rem);
+    text-align: center;
+    border-radius: 12px;
+  }
 }
