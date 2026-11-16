@@ -53,7 +53,7 @@
       "screenY": 70,
       "xPct": 0.02,
       "yPct": 0.13,
-      "text": "This is an example board. Notes like this one float on the screen. Notes with a pin stay attached to a place on the map. Press Edit to change it."
+      "text": "This is an example board. Notes like this one float on the screen. Notes with a pin stay attached to a place on the map. Add ?mode=edit to the address to change it."
     },
     {
       "id": "card-2",

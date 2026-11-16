@@ -1805,7 +1805,10 @@ function setViewMode(enabled) {
   modeToggleBtn.title = enabled
     ? "Open the editing tools. Changes stay in this browser until you download and publish them."
     : "See the map the way visitors will";
-  modeToggleBtn.hidden = enabled && state.mapConfig?.showEditButton === false;
+  // Visitors don't get an Edit button unless the map's owner turns it on with
+  // "showEditButton": true. Anyone who opened the editor (?mode=edit) keeps the
+  // button so they can get back from Preview.
+  modeToggleBtn.hidden = enabled && !state.everEdited && state.mapConfig?.showEditButton !== true;
 
   setToolsVisible(!enabled);
 

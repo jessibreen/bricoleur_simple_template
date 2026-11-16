@@ -5,14 +5,14 @@ Make an annotated web map in your browser and publish it as a website with GitHu
 You get one website that does two jobs:
 
 - **Visitors** see your finished map: your data, drawings, notes, photos and video. They can pan, zoom and open things, but not change anything.
-- **You** press `Edit` on the same site to open the drawing and note tools, then download your work as one file and upload it to GitHub to publish it.
+- **You** add `?mode=edit` to the end of the same address to open the drawing and note tools, then download your work as one file and upload it to GitHub to publish it.
 
 ## Quick start
 
 1. On GitHub, click `Use this template` → `Create a new repository`.
 2. In your new repository, open `Settings` → `Pages`. Under `Build and deployment`, set `Source` to `Deploy from a branch`, choose branch `main` and folder `/ (root)`, and click `Save`.
 3. Wait 1-2 minutes, then open your site: `https://YOUR-USERNAME.github.io/YOUR-REPO/`
-4. You will see the sample map. Press `Edit` (top right) to try the tools.
+4. You will see the sample map. To try the tools, open the editor: `https://YOUR-USERNAME.github.io/YOUR-REPO/?mode=edit`
 
 From here, the work is three things: [add your data](#add-your-data), [annotate the map](#annotate-the-map), and [publish your board](#publish-your-board).
 
@@ -47,7 +47,13 @@ Your GeoJSON needs to use latitude/longitude coordinates (most open data portals
 
 ## Annotate the map
 
-Open your site and press `Edit`. (You can also add `?mode=edit` to the address.)
+Open the editor by adding `?mode=edit` to the end of your site address:
+
+```text
+https://YOUR-USERNAME.github.io/YOUR-REPO/?mode=edit
+```
+
+Bookmark that address. Visitors to your normal site address do not see any editing tools.
 
 **Drawing tools**
 
@@ -95,7 +101,7 @@ Open your site and press `Edit`. (You can also add `?mode=edit` to the address.)
 
 4. Click `Commit changes`. After 1-2 minutes your site address shows your board.
 
-To update a published map: open your site, press `Edit` (your published board loads into the editor), make changes, `Download JSON`, and upload the new file to `data/boards/` with the same name so it replaces the old one.
+To update a published map: open the editor address (your published board loads into the editor), make changes, `Download JSON`, and upload the new file to `data/boards/` with the same name so it replaces the old one.
 
 `data/boards/sample-board.json` is the example that ships with the template. Delete it once you have your own.
 
@@ -112,10 +118,10 @@ Visitors see the board named in `defaultBoard`, read-only. The view adjusts to s
 More options:
 
 - **Several boards on one site:** add `?board=` to the address, for example `https://YOUR-USERNAME.github.io/YOUR-REPO/?board=data/boards/second-board.json`
-- **Hide the Edit button from visitors:** add `"showEditButton": false` to `data/map-config.json`. You can still edit by adding `?mode=edit` to the address.
+- **Show an Edit button to visitors:** add `"showEditButton": true` to `data/map-config.json`. Useful if you want others to try the tools; what they do stays in their own browser.
 - **A picture of the map:** `Export Image` in the editor downloads a PNG.
 
-Pressing `Edit` never changes your published site. Only files you upload to GitHub do.
+Using the editor never changes your published site. Only files you upload to GitHub do.
 
 ## Layer settings reference
 
