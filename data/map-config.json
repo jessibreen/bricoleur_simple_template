@@ -1,5 +1,5 @@
 {
-  "title": "Countermapping",
+  "title": "Bricolage",
   "defaultBoard": "data/boards/sample-board.json",
   "map": {
     "center": [
@@ -9,7 +9,7 @@
     "zoom": 12,
     "layerOrder": [
       "Wards",
-      "Snow Removal Requests"
+      "Capital Bikeshare Stations"
     ],
     "baselayer": {
       "name": "OpenStreetMap",
@@ -61,60 +61,50 @@
       }
     },
     {
-      "name": "Snow Removal Requests",
-      "file": "data/layers/Residential_Snow_Removal_Service_Requests.geojson",
-      "layerType": "categorical",
-      "valueField": "SERVICEORDERSTATUS",
-      "legendTitle": "Snow removal requests",
-      "categories": [
-        {
-          "value": "Open",
-          "label": "Open",
-          "color": "#d1495b"
-        },
-        {
-          "value": "Closed",
-          "label": "Closed",
-          "color": "#2e4057"
-        }
-      ],
-      "nullColor": "#9ca3af",
-      "noDataLabel": "Other",
+      "name": "Capital Bikeshare Stations",
+      "file": "data/layers/Capital_Bikeshare_Locations.geojson",
+      "layerType": "simple",
       "pointShape": "circle",
       "pointStyle": {
         "radius": 4,
         "color": "#ffffff",
+        "fillColor": "#2563eb",
         "weight": 1,
         "fillOpacity": 0.85
       },
+      "showLegend": true,
+      "legendLabel": "Bikeshare station",
       "popup": {
         "enabled": true,
-        "titleField": "STREETADDRESS",
-        "descriptionField": "SERVICECODEDESCRIPTION",
+        "titleField": "NAME",
         "fields": [
           {
-            "field": "SERVICEORDERSTATUS",
-            "label": "Status"
+            "field": "STATION_TYPE",
+            "label": "Station type"
           },
           {
-            "field": "ADDDATE",
-            "label": "Requested"
+            "field": "REGION_NAME",
+            "label": "Region"
           },
           {
-            "field": "RESOLUTIONDATE",
-            "label": "Resolved"
+            "field": "NUM_BIKES_AVAILABLE",
+            "label": "Bikes available"
           },
           {
-            "field": "WARD",
-            "label": "Ward"
+            "field": "NUM_EBIKES_AVAILABLE",
+            "label": "E-bikes available"
           },
           {
-            "field": "SERVICEREQUESTID",
-            "label": "Request ID"
+            "field": "NUM_DOCKS_AVAILABLE",
+            "label": "Docks available"
           },
           {
-            "field": "DETAILS",
-            "label": "Details"
+            "field": "CAPACITY",
+            "label": "Capacity"
+          },
+          {
+            "field": "HAS_KIOSK",
+            "label": "Has kiosk"
           }
         ]
       }
