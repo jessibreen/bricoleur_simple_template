@@ -47,28 +47,95 @@ body {
   letter-spacing: -0.02em;
 }
 
+.header-brand {
+  min-width: 0;
+}
+
 .header-actions {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
-.annotation-controls {
+.workspace {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+}
+
+.tools-panel {
+  flex: 0 0 17rem;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1.15rem;
+  background: #fff;
+  border-right: 1px solid var(--panel-border);
+  z-index: 500;
+}
+
+.tools-panel[hidden] {
+  display: none;
+}
+
+.tools-panel__heading {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.tools-panel__eyebrow {
+  margin: 0 0 0.2rem;
+  color: #6b7280;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.tools-panel h2 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+#tools-close-btn {
+  padding: 0.1rem 0.5rem;
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.tools-section {
+  margin-top: 1.3rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.tools-section h3 {
+  margin: 0 0 0.65rem;
+  font-size: 0.8rem;
+}
+
+.note-actions,
+.drawing-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.note-actions button,
+.drawing-actions button {
+  flex: 1;
+}
+
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
 }
 
 .annotation-toolbar {
-  position: static;
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.35rem;
-  border: 1.5px solid var(--panel-border);
-  border-radius: 8px;
-  background: #fff;
-  box-shadow: var(--shadow-sm);
+  display: grid;
+  gap: 0.75rem;
 }
 
 .annotation-toolbar.is-hidden {
@@ -81,6 +148,21 @@ body {
   gap: 0.25rem;
   font-size: 0.72rem;
   color: #4b5563;
+}
+
+.drawing-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+
+.drawing-options label {
+  justify-content: space-between;
+}
+
+#annotation-size {
+  min-width: 0;
+  width: 5rem;
 }
 
 #annotation-stamp {
@@ -104,25 +186,6 @@ body {
   border: 1px solid #d1d5db;
   border-radius: 4px;
   background: transparent;
-}
-
-.btn-group {
-  display: flex;
-  gap: 0.2rem;
-  border: 1.5px solid var(--panel-border);
-  border-radius: 7px;
-  overflow: hidden;
-  background: #fff;
-}
-
-.btn-group button {
-  border: none;
-  border-radius: 0;
-  border-right: 1px solid var(--panel-border);
-}
-
-.btn-group button:last-child {
-  border-right: none;
 }
 
 /* ── Buttons ───────────────────────────────────────────────────────────────── */
@@ -179,35 +242,14 @@ select option {
   padding: 0.4rem 0.5rem;
 }
 
-/* ── On-map baselayer control ─────────────────────────────────────── */
+/* ── Baselayer control ────────────────────────────────────────────────────── */
 .baselayer-control {
-  position: absolute;
-  bottom: 2rem;
-  left: 0.75rem;
-  z-index: 450;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  pointer-events: auto;
+  display: grid;
+  gap: 0.35rem;
 }
 
 .baselayer-control button {
-  display: block;
-  width: 7rem;
   text-align: left;
-  padding: 0.35rem 0.6rem;
-  font-size: 0.78rem;
-  background: rgba(255,255,255,0.92);
-  border: 1.5px solid rgba(0,0,0,0.18);
-  border-radius: 5px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
-  cursor: pointer;
-  transition: background 0.1s, border-color 0.1s;
-}
-
-.baselayer-control button:hover {
-  background: #fff;
-  border-color: #9ca3af;
 }
 
 .baselayer-control button.is-active {
@@ -300,6 +342,9 @@ select option {
 /* ── Map container ─────────────────────────────────────────────────────────── */
 #map-container {
   position: relative;
+  z-index: 0;
+  flex: 1;
+  min-width: 0;
   overflow: hidden; /* clips the cards/string overlay to the map area */
 }
 
@@ -801,10 +846,6 @@ body.is-exporting .prompt-bar {
   display: none;
 }
 
-.annotation-toolbar {
-  flex-wrap: wrap;
-}
-
 .annotation-toolbar button:disabled {
   opacity: 0.45;
   cursor: default;
@@ -1000,33 +1041,31 @@ body.view-mode .card-media-input-row {
     align-items: stretch;
     gap: 0.4rem;
     padding: 0.45rem 0.6rem;
-    overflow: visible;
+  }
+
+  body.view-mode .site-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .header-brand h1 {
     font-size: 1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  /* Viewing: title and the Edit button share one slim row. */
-  body.view-mode .site-header {
-    flex-direction: row;
-    align-items: center;
+  .header-actions {
+    min-width: 0;
+    flex-wrap: wrap;
   }
 
-  /* Editing: the tools scroll sideways instead of pushing the map away. */
-  body:not(.view-mode) .header-actions {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding-bottom: 0.2rem;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  body:not(.view-mode) .header-actions > * {
-    flex: 0 0 auto;
-  }
-
-  .annotation-toolbar {
-    flex-wrap: nowrap;
+  .tools-panel {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: min(17rem, calc(100% - 3rem));
+    box-shadow: var(--shadow-md);
   }
 
   .card {
@@ -1038,17 +1077,6 @@ body.view-mode .card-media-input-row {
     max-height: 35vh;
     overflow-y: auto;
     font-size: 0.72rem;
-  }
-
-  .baselayer-control {
-    bottom: 1.6rem;
-    left: 0.5rem;
-  }
-
-  .baselayer-control button {
-    width: 6rem;
-    padding: 0.25rem 0.45rem;
-    font-size: 0.7rem;
   }
 
   .view-hint {

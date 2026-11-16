@@ -1,18 +1,18 @@
-# Bricoleur Map Template
+# Bricolage Map Template
 
 Make an annotated web map in your browser and publish it as a website with GitHub Pages. No coding and nothing to install.
 
 You get one website that does two jobs:
 
-- **Visitors** see your finished map: your data, drawings, notes, photos and video. They can pan, zoom and open things, but not change anything.
-- **You** add `?mode=edit` to the end of the same address to open the drawing and note tools, then download your work as one file and upload it to GitHub to publish it.
+- **Visitors** see your finished map: your data, drawings, notes, photos and video. They can pan, zoom and open things; any edits they try remain in their own browser.
+- **You** use `Edit` or add `?mode=edit` to the end of the same address to open the drawing and note tools, then download your work as one file and upload it to GitHub to publish it.
 
 ## Quick start
 
 1. On GitHub, click `Use this template` → `Create a new repository`.
 2. In your new repository, open `Settings` → `Pages`. Under `Build and deployment`, set `Source` to `Deploy from a branch`, choose branch `main` and folder `/ (root)`, and click `Save`.
 3. Wait 1-2 minutes, then open your site: `https://YOUR-USERNAME.github.io/YOUR-REPO/`
-4. You will see the sample map. To try the tools, open the editor: `https://YOUR-USERNAME.github.io/YOUR-REPO/?mode=edit`
+4. You will see the sample map. Click `Edit` to try the tools, or open the editor directly: `https://YOUR-USERNAME.github.io/YOUR-REPO/?mode=edit`
 
 From here, the work is three things: [add your data](#add-your-data), [annotate the map](#annotate-the-map), and [publish your board](#publish-your-board).
 
@@ -47,13 +47,13 @@ Your GeoJSON needs to use latitude/longitude coordinates (most open data portals
 
 ## Annotate the map
 
-Open the editor by adding `?mode=edit` to the end of your site address:
+Click `Edit` on the map, or open the editor by adding `?mode=edit` to the end of your site address:
 
 ```text
 https://YOUR-USERNAME.github.io/YOUR-REPO/?mode=edit
 ```
 
-Bookmark that address. Visitors to your normal site address do not see any editing tools.
+Bookmark that address. The editing tools are in the left panel; use `Hide tools` or the panel's close button to make more room, and `Show tools` to reopen it. Visitors initially see the map without the tools panel.
 
 **Drawing tools**
 
@@ -118,7 +118,7 @@ Visitors see the board named in `defaultBoard`, read-only. The view adjusts to s
 More options:
 
 - **Several boards on one site:** add `?board=` to the address, for example `https://YOUR-USERNAME.github.io/YOUR-REPO/?board=data/boards/second-board.json`
-- **Show an Edit button to visitors:** add `"showEditButton": true` to `data/map-config.json`. Useful if you want others to try the tools; what they do stays in their own browser.
+- **Hide the Edit button from visitors:** add `"showEditButton": false` to `data/map-config.json` at the top level. It is visible by default. You can still open the editor with `?mode=edit`, and return from Preview to editing. This setting hides the button, not the editor itself.
 - **A picture of the map:** `Export Image` in the editor downloads a PNG.
 
 Using the editor never changes your published site. Only files you upload to GitHub do.

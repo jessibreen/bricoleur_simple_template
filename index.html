@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Countermapping</title>
+  <title>Bricolage</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -18,55 +18,86 @@
 <body>
   <header class="site-header">
     <div class="header-brand">
-      <h1>Countermapping</h1>
+      <h1>Bricolage</h1>
     </div>
     <div class="header-actions">
-      <div class="annotation-controls editing-only">
-        <div id="annotation-toolbar" class="annotation-toolbar">
-          <button class="tool-btn" data-tool="select" type="button" title="Click a drawing to select it, drag to move it, double-click text to edit it">Select</button>
-          <button class="tool-btn" data-tool="draw" type="button" title="Draw freehand">Draw</button>
-          <button class="tool-btn" data-tool="line" type="button" title="Drag to draw a straight line">Line</button>
-          <button class="tool-btn" data-tool="arrow" type="button" title="Drag to draw an arrow">Arrow</button>
-          <button class="tool-btn" data-tool="rect" type="button" title="Drag to draw a box">Box</button>
-          <button class="tool-btn" data-tool="ellipse" type="button" title="Drag to draw a circle or oval">Circle</button>
-          <button class="tool-btn" data-tool="polygon" type="button" title="Click to add corners, double-click to finish the area">Area</button>
-          <button class="tool-btn" data-tool="text" type="button" title="Click the map to add a text label">Text</button>
-          <button class="tool-btn" data-tool="stamp" type="button" title="Click the map to place the stamp">Stamp</button>
-          <label>
-            Stamp
-            <input id="annotation-stamp" type="text" value="📍" aria-label="Stamp text" />
-          </label>
-          <label>
-            Color
-            <input id="annotation-color" class="color-input" type="color" value="#f24e1e" aria-label="Drawing color" />
-          </label>
-          <label>
-            Size
-            <input id="annotation-size" type="range" min="2" max="24" value="6" aria-label="Brush size" />
-          </label>
-          <label title="Shade the inside of boxes, circles and areas">
-            <input id="annotation-fill" type="checkbox" checked />
-            Fill
-          </label>
-          <button id="undo-annotation" type="button" title="Remove the most recent drawing">Undo</button>
-          <button id="delete-annotation" type="button" title="Delete the selected drawing" disabled>Delete</button>
-          <button id="clear-annotations" type="button" title="Remove all drawings">Clear</button>
-        </div>
-      </div>
-      <!-- Create by note type first. Pinning is done per-card via "Add Pin". -->
-      <div class="btn-group editing-only">
-        <button id="add-note-btn" type="button">+ Text Note</button>
-        <button id="add-media-btn" type="button">+ Media Note</button>
-      </div>
+      <button id="tools-toggle-btn" class="editing-only" type="button" aria-controls="tools-panel" aria-expanded="true">Hide tools</button>
       <button id="export-image-btn" class="editing-only" type="button">Export Image</button>
       <button id="save-btn" class="editing-only" type="button">Download JSON</button>
-      <button id="load-btn" class="editing-only" type="button">Load JSON</button>
-      <input id="load-input" type="file" accept="application/json,.json" hidden />
       <button id="mode-toggle-btn" type="button">Preview</button>
     </div>
   </header>
 
-  <!-- Map fills all remaining vertical space -->
+  <main class="workspace">
+    <aside id="tools-panel" class="tools-panel editing-only" aria-label="Map editing tools">
+      <div class="tools-panel__heading">
+        <div>
+          <p class="tools-panel__eyebrow">MAP EDITOR</p>
+          <h2>Tools</h2>
+        </div>
+        <button id="tools-close-btn" type="button" aria-label="Close tools panel">×</button>
+      </div>
+
+      <section class="tools-section" aria-labelledby="notes-heading">
+        <h3 id="notes-heading">Add a note</h3>
+        <div class="note-actions">
+          <button id="add-note-btn" type="button">+ Text Note</button>
+          <button id="add-media-btn" type="button">+ Media Note</button>
+        </div>
+      </section>
+
+      <section class="tools-section" aria-labelledby="drawing-heading">
+        <h3 id="drawing-heading">Draw on the map</h3>
+        <div id="annotation-toolbar" class="annotation-toolbar">
+          <div class="tool-grid">
+            <button class="tool-btn" data-tool="select" type="button" title="Click a drawing to select it, drag to move it, double-click text to edit it">Select</button>
+            <button class="tool-btn" data-tool="draw" type="button" title="Draw freehand">Draw</button>
+            <button class="tool-btn" data-tool="line" type="button" title="Drag to draw a straight line">Line</button>
+            <button class="tool-btn" data-tool="arrow" type="button" title="Drag to draw an arrow">Arrow</button>
+            <button class="tool-btn" data-tool="rect" type="button" title="Drag to draw a box">Box</button>
+            <button class="tool-btn" data-tool="ellipse" type="button" title="Drag to draw a circle or oval">Circle</button>
+            <button class="tool-btn" data-tool="polygon" type="button" title="Click to add corners, double-click to finish the area">Area</button>
+            <button class="tool-btn" data-tool="text" type="button" title="Click the map to add a text label">Text</button>
+            <button class="tool-btn" data-tool="stamp" type="button" title="Click the map to place the stamp">Stamp</button>
+          </div>
+          <div class="drawing-options">
+            <label>
+              Stamp
+              <input id="annotation-stamp" type="text" value="📍" aria-label="Stamp text" />
+            </label>
+            <label>
+              Color
+              <input id="annotation-color" class="color-input" type="color" value="#f24e1e" aria-label="Drawing color" />
+            </label>
+            <label>
+              Size
+              <input id="annotation-size" type="range" min="2" max="24" value="6" aria-label="Brush size" />
+            </label>
+            <label title="Shade the inside of boxes, circles and areas">
+              <input id="annotation-fill" type="checkbox" checked />
+              Fill
+            </label>
+          </div>
+          <div class="drawing-actions">
+            <button id="undo-annotation" type="button" title="Remove the most recent drawing">Undo</button>
+            <button id="delete-annotation" type="button" title="Delete the selected drawing" disabled>Delete</button>
+            <button id="clear-annotations" type="button" title="Remove all drawings">Clear</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="tools-section" aria-labelledby="background-heading">
+        <h3 id="background-heading">Map background</h3>
+        <div id="baselayer-control" class="baselayer-control" aria-label="Map background"></div>
+      </section>
+
+      <section class="tools-section" aria-labelledby="board-heading">
+        <h3 id="board-heading">Your board</h3>
+        <button id="load-btn" type="button">Load JSON</button>
+        <input id="load-input" type="file" accept="application/json,.json" hidden />
+      </section>
+    </aside>
+
   <div id="map-container">
     <div id="map" aria-label="Interactive map"></div>
 
@@ -88,17 +119,13 @@
     <!-- Cards layer — floating and anchored cards live here -->
     <div id="cards-layer" aria-label="Cards and notes"></div>
 
-    <!-- Baselayer control (editing only) -->
-    <div id="baselayer-control" class="baselayer-control editing-only" aria-label="Map background">
-      <!-- pill buttons populated by JS -->
-    </div>
-
     <aside id="legend-control" class="legend-control" aria-label="Map legend"></aside>
 
     <!-- Area tool instruction banner -->
     <div id="polygon-banner" class="drop-banner polygon-banner" aria-live="polite">
       Click to add corners — double-click or press <kbd>Enter</kbd> to finish, <kbd>Esc</kbd> to cancel
     </div>
+    </main>
 
     <!-- Drop-pin mode instruction banner -->
     <div id="drop-banner" class="drop-banner" aria-live="polite">

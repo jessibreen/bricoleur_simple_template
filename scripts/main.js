@@ -16,6 +16,9 @@ const clearAnnotationsBtn = document.getElementById("clear-annotations");
 const deleteAnnotationBtn = document.getElementById("delete-annotation");
 const annotationFillInput = document.getElementById("annotation-fill");
 const modeToggleBtn = document.getElementById("mode-toggle-btn");
+const toolsPanel = document.getElementById("tools-panel");
+const toolsToggleBtn = document.getElementById("tools-toggle-btn");
+const toolsCloseBtn = document.getElementById("tools-close-btn");
 const annotationInputPopover = document.getElementById("annotation-input-popover");
 const annotationInputField = document.getElementById("annotation-input-field");
 const annotationInputApplyBtn = document.getElementById("annotation-input-apply");
@@ -1805,10 +1808,8 @@ function setViewMode(enabled) {
   modeToggleBtn.title = enabled
     ? "Open the editing tools. Changes stay in this browser until you download and publish them."
     : "See the map the way visitors will";
-  // Visitors don't get an Edit button unless the map's owner turns it on with
-  // "showEditButton": true. Anyone who opened the editor (?mode=edit) keeps the
-  // button so they can get back from Preview.
-  modeToggleBtn.hidden = enabled && !state.everEdited && state.mapConfig?.showEditButton !== true;
+  // Editors retain the button in Preview even when it is hidden for visitors.
+  modeToggleBtn.hidden = enabled && !state.everEdited && state.mapConfig?.showEditButton === false;
 
   setToolsVisible(!enabled);
 
@@ -2341,6 +2342,18 @@ async function loadDataLayers(layers, mapConfig = {}) {
 
 // ── Event wiring ───────────────────────────────────────────────────────────────
 function wireEvents() {
+  function setPanelOpen(open) {
+    toolsPanel.hidden = !open;
+    toolsToggleBtn.setAttribute("aria-expanded", String(open));
+    toolsToggleBtn.textContent = open ? "Hide tools" : "Show tools";
+  }
+
+  toolsToggleBtn.addEventListener("click", () => setPanelOpen(toolsPanel.hidden));
+  toolsCloseBtn.addEventListener("click", () => {
+    setPanelOpen(false);
+    toolsToggleBtn.focus();
+  });
+
   // ── Annotation controls ────────────────────────────────────────────────────
   annotationColorInput.addEventListener("input", (ev) => {
     state.annotation.color = ev.target.value;
@@ -2708,7 +2721,7 @@ function wireEvents() {
 
   // ── Keep string SVG sized to the map container ────────────────────────────
   new ResizeObserver(() => {
-    // The map area changes size when the toolbar appears, wraps or hides;
+    // The map area changes size when the tools panel opens or closes;
     // Leaflet only notices window resizes on its own.
     state.map.invalidateSize({ animate: false });
     // Until the visitor moves the map themselves, keep showing the author's
@@ -2800,7 +2813,7 @@ async function init() {
 
   setBaselayer(mc.baselayer);
 
-  // Populate on-map baselayer control with pill buttons
+  // Populate the baselayer control in the tools panel.
   if (mc.baselayers && baselayerControl) {
     for (let i = 0; i < mc.baselayers.length; i++) {
       const bl = mc.baselayers[i];
