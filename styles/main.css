@@ -125,6 +125,171 @@ body {
   font-size: 0.8rem;
 }
 
+.tools-help,
+.data-layer-help {
+  margin: 0.45rem 0 0;
+  color: #6b7280;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.data-layer-dialog {
+  width: min(68rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  padding: 0;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  color: var(--ink);
+  box-shadow: var(--shadow-md);
+}
+
+.data-layer-dialog::backdrop {
+  background: rgba(17, 24, 39, 0.55);
+}
+
+.data-layer-dialog form {
+  display: grid;
+  gap: 0.7rem;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  padding: 1.2rem;
+}
+
+.data-layer-dialog__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.data-layer-dialog__header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.data-layer-intro,
+.data-layer-file-path {
+  margin: 0;
+  color: #4b5563;
+  font-size: 0.82rem;
+}
+
+.data-layer-file-label,
+.data-layer-name-label,
+.data-layer-title-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.data-layer-dialog input[type="text"],
+.data-layer-dialog input[type="file"],
+.data-layer-dialog select {
+  width: 100%;
+  min-width: 0;
+  padding: 0.45rem 0.55rem;
+  border: 1.5px solid var(--panel-border);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink);
+  font: 0.82rem "Space Grotesk", system-ui, sans-serif;
+}
+
+.data-layer-file-path code {
+  overflow-wrap: anywhere;
+}
+
+.data-layer-editor {
+  display: grid;
+  gap: 0.45rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.data-layer-editor[hidden] {
+  display: none;
+}
+
+.data-layer-editor h3 {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+}
+
+.data-layer-preview {
+  max-height: 15rem;
+  overflow: auto;
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+}
+
+.data-layer-preview table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.data-layer-preview th,
+.data-layer-preview td {
+  max-width: 18rem;
+  padding: 0.4rem 0.55rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.data-layer-preview th {
+  position: sticky;
+  top: 0;
+  background: #f3f4f6;
+  font-weight: 700;
+}
+
+.data-layer-preview td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.data-layer-fields {
+  display: grid;
+  gap: 0.35rem;
+  max-height: 15rem;
+  overflow-y: auto;
+  padding: 0.55rem;
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+}
+
+.data-layer-field {
+  display: grid;
+  grid-template-columns: auto minmax(8rem, 1fr) minmax(10rem, 1.2fr);
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.78rem;
+}
+
+.data-layer-field input[type="text"] {
+  padding: 0.3rem 0.45rem;
+}
+
+.data-layer-status {
+  margin: 0;
+  color: #166534;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.data-layer-status.is-error {
+  color: #b91c1c;
+}
+
+.data-layer-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid #e5e7eb;
+}
+
 .note-actions,
 .drawing-actions {
   display: flex;
@@ -1093,6 +1258,24 @@ body.view-mode .card-media-input-row {
     white-space: normal;
     border-radius: 14px;
     font-size: 0.78rem;
+  }
+
+  .data-layer-dialog {
+    width: calc(100vw - 1rem);
+    max-height: calc(100vh - 1rem);
+  }
+
+  .data-layer-dialog form {
+    max-height: calc(100vh - 1rem);
+    padding: 0.85rem;
+  }
+
+  .data-layer-field {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .data-layer-field input[type="text"] {
+    grid-column: 2;
   }
 
   .drop-banner {

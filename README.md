@@ -39,11 +39,15 @@ The title appears in the page header and browser tab, and in the names of downlo
 
 ## Add your data
 
-1. On GitHub, open `data/layers/`, click `Add file` → `Upload files`, and upload your GeoJSON file. Files must be under 25 MB.
-2. Open `data/map-config.json`, click the pencil icon, and add an entry for the file under `"layers"` (templates are in [Layer settings reference](#layer-settings-reference)).
-3. Click `Commit changes` and wait 1-2 minutes for the site to update.
+1. Make sure you have a local copy of your dataset in GeoJSON format. Files must be under 25 MB and use latitude/longitude coordinates.
+2. Open the map editor and choose **Preview and configure data** in the Tools panel. Select the GeoJSON file to see a sample table, choose a popup title field, and select any other popup fields. You can edit the labels visitors will see.
+3. Download the updated `map-config.json`. The helper does not upload or publish files; it only reads the selected file in your browser and creates the configuration.
+4. On GitHub, upload the original GeoJSON file to `data/layers/` and the downloaded `map-config.json` to `data/`.
+5. Commit the changes and wait 1-2 minutes for the site to update.
 
-Your GeoJSON needs to use latitude/longitude coordinates (most open data portals offer this as "GeoJSON" or "WGS84"). If the map shows a red "Something didn't load" box, it names the file and the problem.
+The helper sets up popup fields and a basic layer style. For category colors, choropleths, and other options, edit the layer entry directly using the templates in [Layer settings reference](#layer-settings-reference).
+
+If the map shows a red "Something didn't load" box, it names the file and the problem.
 
 ## Annotate the map
 

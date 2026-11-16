@@ -31,6 +31,19 @@ const loadBtn           = document.getElementById("load-btn");
 const loadInput         = document.getElementById("load-input");
 const baselayerControl  = document.getElementById("baselayer-control");
 const legendControl     = document.getElementById("legend-control");
+const addDataLayerBtn   = document.getElementById("add-data-layer-btn");
+const dataLayerDialog   = document.getElementById("data-layer-dialog");
+const dataLayerForm     = document.getElementById("data-layer-form");
+const dataLayerFileInput = document.getElementById("data-layer-file");
+const dataLayerFilePath = document.getElementById("data-layer-file-path");
+const dataLayerEditor   = document.getElementById("data-layer-editor");
+const dataLayerNameInput = document.getElementById("data-layer-name");
+const dataLayerPreviewSummary = document.getElementById("data-layer-preview-summary");
+const dataLayerPreview  = document.getElementById("data-layer-preview");
+const dataLayerTitleField = document.getElementById("data-layer-title-field");
+const dataLayerFields   = document.getElementById("data-layer-fields");
+const dataLayerStatus   = document.getElementById("data-layer-status");
+const dataLayerDownloadBtn = document.getElementById("data-layer-download-btn");
 
 // ── State ─────────────────────────────────────────────────────────────────────
 const state = {
@@ -73,6 +86,7 @@ const state = {
     editingId: null,      // text label currently being re-edited
   },
   currentBaselayerName: null,
+  dataLayerDraft: null,
   cleanFingerprint: null, // board contents at last load / download
   everEdited: false,
   boardView: null,        // map position saved in the loaded board
@@ -2348,6 +2362,258 @@ async function loadDataLayers(layers, mapConfig = {}) {
   renderLayerLegends();
 }
 
+function humanizeLabel(value) {
+  return String(value)
+    .replace(/\.(geo)?json$/i, "")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase()
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function setDataLayerStatus(message, isError = false) {
+  dataLayerStatus.textContent = message;
+  dataLayerStatus.classList.toggle("is-error", isError);
+}
+
+function resetDataLayerBuilder() {
+  state.dataLayerDraft = null;
+  dataLayerFileInput.value = "";
+  dataLayerFilePath.hidden = true;
+  dataLayerFilePath.textContent = "";
+  dataLayerEditor.hidden = true;
+  dataLayerNameInput.value = "";
+  dataLayerPreviewSummary.textContent = "";
+  dataLayerPreview.replaceChildren();
+  dataLayerTitleField.replaceChildren();
+  dataLayerFields.replaceChildren();
+  dataLayerDownloadBtn.disabled = true;
+  setDataLayerStatus("");
+}
+
+function renderDataLayerSample(features, fields) {
+  const sampleFeatures = features.slice(0, 5);
+  const sampleFields = fields.slice(0, 8);
+  const table = document.createElement("table");
+  const head = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+  const columns = sampleFields.length ? sampleFields : ["Feature"];
+
+  for (const field of columns) {
+    const heading = document.createElement("th");
+    heading.scope = "col";
+    heading.textContent = field;
+    headerRow.appendChild(heading);
+  }
+  head.appendChild(headerRow);
+  table.appendChild(head);
+
+  const body = document.createElement("tbody");
+  sampleFeatures.forEach((feature, index) => {
+    const row = document.createElement("tr");
+    const properties = feature.properties && typeof feature.properties === "object"
+      ? feature.properties
+      : {};
+
+    if (sampleFields.length) {
+      for (const field of sampleFields) {
+        const cell = document.createElement("td");
+        const value = properties[field];
+        const formatted = value == null
+          ? ""
+          : typeof value === "object"
+            ? JSON.stringify(value)
+            : String(value);
+        cell.textContent = formatted.length > 120 ? `${formatted.slice(0, 117)}...` : formatted;
+        row.appendChild(cell);
+      }
+    } else {
+      const cell = document.createElement("td");
+      cell.textContent = `Feature ${index + 1}`;
+      row.appendChild(cell);
+    }
+
+    body.appendChild(row);
+  });
+  table.appendChild(body);
+  dataLayerPreview.replaceChildren(table);
+
+  const fieldCount = fields.length;
+  const shownFields = Math.min(fieldCount, sampleFields.length);
+  dataLayerPreviewSummary.textContent =
+    `Showing ${sampleFeatures.length} of ${features.length} records` +
+    (fieldCount
+      ? ` and ${shownFields} of ${fieldCount} fields. Scroll the table to see all sample columns.`
+      : ". This file has no attribute fields to show.");
+}
+
+function renderDataLayerFields(fields) {
+  const emptyOption = document.createElement("option");
+  emptyOption.value = "";
+  emptyOption.textContent = "No title field";
+  dataLayerTitleField.appendChild(emptyOption);
+
+  const preferredTitle = fields.find((field) => ["name", "title", "label"].includes(field.toLowerCase()));
+  for (const field of fields) {
+    const option = document.createElement("option");
+    option.value = field;
+    option.textContent = field;
+    dataLayerTitleField.appendChild(option);
+
+    const row = document.createElement("label");
+    row.className = "data-layer-field";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.dataset.field = field;
+    checkbox.setAttribute("aria-label", `Show ${field} in popup`);
+    row.appendChild(checkbox);
+
+    const fieldName = document.createElement("span");
+    fieldName.textContent = field;
+    row.appendChild(fieldName);
+
+    const labelInput = document.createElement("input");
+    labelInput.type = "text";
+    labelInput.className = "data-layer-field-label";
+    labelInput.value = humanizeLabel(field);
+    labelInput.setAttribute("aria-label", `Display label for ${field}`);
+    row.appendChild(labelInput);
+    dataLayerFields.appendChild(row);
+  }
+
+  if (preferredTitle) dataLayerTitleField.value = preferredTitle;
+}
+
+async function loadDataLayerDraft(file) {
+  state.dataLayerDraft = null;
+  dataLayerEditor.hidden = true;
+  dataLayerDownloadBtn.disabled = true;
+  dataLayerPreview.replaceChildren();
+  dataLayerTitleField.replaceChildren();
+  dataLayerFields.replaceChildren();
+  dataLayerFilePath.hidden = true;
+  setDataLayerStatus("Reading the selected file...");
+
+  try {
+    const geojson = JSON.parse(await file.text());
+    if (geojson?.type !== "FeatureCollection" || !Array.isArray(geojson.features)) {
+      throw new Error("This file is not a GeoJSON FeatureCollection. Choose a GeoJSON file that contains a collection of features.");
+    }
+    if (!geojson.features.length) {
+      throw new Error("This GeoJSON file has no features to add.");
+    }
+
+    const fields = [...new Set(geojson.features.flatMap((feature) => {
+      const properties = feature?.properties;
+      return properties && typeof properties === "object" && !Array.isArray(properties)
+        ? Object.keys(properties)
+        : [];
+    }))];
+    state.dataLayerDraft = { file, geojson, fields };
+
+    const layerName = humanizeLabel(file.name);
+    const layerPath = `data/layers/${encodeURIComponent(file.name)}`;
+    dataLayerNameInput.value = layerName;
+    dataLayerFilePath.replaceChildren(
+      document.createTextNode("After downloading, upload this data file to "),
+      Object.assign(document.createElement("code"), { textContent: layerPath }),
+      document.createTextNode("."),
+    );
+    renderDataLayerSample(geojson.features, fields);
+    renderDataLayerFields(fields);
+    dataLayerEditor.hidden = false;
+    dataLayerDownloadBtn.disabled = false;
+    setDataLayerStatus("File ready. Choose a layer name and popup fields, then download the updated config.");
+  } catch (error) {
+    setDataLayerStatus(error.message || "Could not read this file. Check that it is valid GeoJSON.", true);
+  }
+}
+
+function downloadUpdatedMapConfig() {
+  const draft = state.dataLayerDraft;
+  if (!draft) {
+    setDataLayerStatus("Choose a GeoJSON file before downloading the config.", true);
+    return;
+  }
+
+  const name = dataLayerNameInput.value.trim();
+  if (!name) {
+    setDataLayerStatus("Enter a name for this map layer.", true);
+    dataLayerNameInput.focus();
+    return;
+  }
+
+  const layers = asArray(state.mapConfig.layers);
+  if (layers.some((layer) => String(layer.name || "").trim().toLowerCase() === name.toLowerCase())) {
+    setDataLayerStatus("A layer with that name already exists. Choose a different name.", true);
+    dataLayerNameInput.focus();
+    return;
+  }
+
+  try {
+    const config = JSON.parse(JSON.stringify(state.mapConfig));
+    const popupFields = [...dataLayerFields.querySelectorAll(".data-layer-field")]
+      .filter((row) => row.querySelector('input[type="checkbox"]').checked)
+      .map((row) => {
+        const field = row.querySelector('input[type="checkbox"]').dataset.field;
+        const label = row.querySelector(".data-layer-field-label").value.trim();
+        return { field, label: label || humanizeLabel(field) };
+      });
+    const titleField = dataLayerTitleField.value;
+    const layer = {
+      name,
+      file: `data/layers/${encodeURIComponent(draft.file.name)}`,
+      layerType: "simple",
+      style: {
+        color: "#1f2937",
+        weight: 1,
+        fillColor: "#3b82f6",
+        fillOpacity: 0.35,
+      },
+      pointShape: "circle",
+      pointStyle: {
+        radius: 5,
+        color: "#ffffff",
+        fillColor: "#2563eb",
+        weight: 1,
+        fillOpacity: 0.9,
+      },
+      showLegend: true,
+      legendLabel: name,
+      popup: {
+        enabled: true,
+        ...(titleField ? { titleField } : {}),
+        fields: popupFields,
+      },
+    };
+
+    config.layers = [...layers, layer];
+    config.map = config.map || {};
+    const layerOrder = Array.isArray(config.map.layerOrder)
+      ? config.map.layerOrder
+      : layers.map((existingLayer) => existingLayer.name).filter(Boolean);
+    config.map.layerOrder = [...layerOrder, name];
+
+    const blob = new Blob([JSON.stringify(config, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "map-config.json";
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setDataLayerStatus(
+      `Downloaded map-config.json. Upload "${draft.file.name}" to data/layers/, then upload the downloaded config as data/map-config.json.`,
+    );
+  } catch (error) {
+    setDataLayerStatus(error.message || "Could not create the map configuration.", true);
+    // eslint-disable-next-line no-console
+    console.error(error);
+  }
+}
+
 function setPanelOpen(open) {
   toolsPanel.hidden = !open;
   toolsToggleBtn.setAttribute("aria-expanded", String(open));
@@ -2682,6 +2948,24 @@ function wireEvents() {
   exportImageBtn.addEventListener("click", downloadImage);
 
   saveBtn.addEventListener("click", downloadJson);
+
+  addDataLayerBtn.addEventListener("click", () => {
+    resetDataLayerBuilder();
+    dataLayerDialog.showModal();
+    dataLayerFileInput.focus();
+  });
+
+  document.getElementById("data-layer-close-btn").addEventListener("click", () => dataLayerDialog.close());
+  document.getElementById("data-layer-cancel-btn").addEventListener("click", () => dataLayerDialog.close());
+  dataLayerDialog.addEventListener("close", resetDataLayerBuilder);
+  dataLayerFileInput.addEventListener("change", async () => {
+    const file = dataLayerFileInput.files?.[0];
+    if (file) await loadDataLayerDraft(file);
+  });
+  dataLayerForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    downloadUpdatedMapConfig();
+  });
 
   loadBtn.addEventListener("click", () => {
     if (!state.isViewMode) loadInput.click();

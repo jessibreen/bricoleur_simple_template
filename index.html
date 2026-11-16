@@ -49,6 +49,12 @@
         </div>
       </section>
 
+      <section class="tools-section" aria-labelledby="data-layer-heading">
+        <h3 id="data-layer-heading">Add a data layer</h3>
+        <button id="add-data-layer-btn" type="button">Preview and configure data</button>
+        <p class="tools-help">Choose which data fields appear in map popups.</p>
+      </section>
+
       <section class="tools-section" aria-labelledby="drawing-heading">
         <h3 id="drawing-heading">Draw on the map</h3>
         <div id="annotation-toolbar" class="annotation-toolbar">
@@ -130,6 +136,44 @@
     </div>
     </main>
   </div>
+
+  <dialog id="data-layer-dialog" class="data-layer-dialog" aria-labelledby="data-layer-dialog-title">
+    <form id="data-layer-form">
+      <header class="data-layer-dialog__header">
+        <div>
+          <p class="tools-panel__eyebrow">DATA LAYER HELPER</p>
+          <h2 id="data-layer-dialog-title">Preview and configure data</h2>
+        </div>
+        <button id="data-layer-close-btn" type="button" aria-label="Close">×</button>
+      </header>
+      <p class="data-layer-intro">Choose a GeoJSON file to preview a few rows. Select the fields and labels to show in map popups.</p>
+
+      <label class="data-layer-file-label" for="data-layer-file">GeoJSON file</label>
+      <input id="data-layer-file" type="file" accept=".geojson,.json,application/geo+json,application/json" />
+      <p id="data-layer-file-path" class="data-layer-file-path" hidden></p>
+
+      <section id="data-layer-editor" class="data-layer-editor" hidden>
+        <label class="data-layer-name-label" for="data-layer-name">Layer name</label>
+        <input id="data-layer-name" type="text" maxlength="100" required />
+
+        <h3>Sample rows</h3>
+        <p id="data-layer-preview-summary" class="data-layer-help"></p>
+        <div id="data-layer-preview" class="data-layer-preview"></div>
+
+        <h3>Popup fields</h3>
+        <label class="data-layer-title-label" for="data-layer-title-field">Popup title field</label>
+        <select id="data-layer-title-field"></select>
+        <p class="data-layer-help">Choose a field for the popup heading, then select any additional fields and edit their display labels.</p>
+        <div id="data-layer-fields" class="data-layer-fields"></div>
+      </section>
+
+      <p id="data-layer-status" class="data-layer-status" role="status" aria-live="polite"></p>
+      <footer class="data-layer-dialog__actions">
+        <button id="data-layer-cancel-btn" type="button">Cancel</button>
+        <button id="data-layer-download-btn" type="submit" disabled>Download updated map-config.json</button>
+      </footer>
+    </form>
+  </dialog>
 
   <!-- Navigation hint shown in view mode -->
   <div id="view-hint" class="view-hint" role="status" aria-live="polite">
