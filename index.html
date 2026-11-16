@@ -15,16 +15,18 @@
   />
   <link rel="stylesheet" href="styles/main.css" />
 </head>
-<body>
+<body class="view-mode">
   <header class="site-header">
     <div class="header-brand">
       <h1>Bricolage</h1>
     </div>
     <div class="header-actions">
       <button id="tools-toggle-btn" class="editing-only" type="button" aria-controls="tools-panel" aria-expanded="true">Hide tools</button>
-      <button id="export-image-btn" class="editing-only" type="button">Export Image</button>
-      <button id="save-btn" class="editing-only" type="button">Download JSON</button>
-      <button id="mode-toggle-btn" type="button">Preview</button>
+      <button id="export-image-btn" class="editing-only" type="button" disabled>Export Image</button>
+      <button id="save-btn" class="editing-only" type="button" disabled>Download JSON</button>
+      <button id="load-btn" class="editing-only" type="button" disabled>Load JSON</button>
+      <input id="load-input" type="file" accept="application/json,.json" hidden />
+      <button id="mode-toggle-btn" type="button" autocomplete="off" disabled>Loading map…</button>
     </div>
   </header>
 
@@ -38,6 +40,7 @@
         <button id="tools-close-btn" type="button" aria-label="Close tools panel">×</button>
       </div>
 
+      <fieldset id="tools-content" class="tools-content" disabled>
       <section class="tools-section" aria-labelledby="notes-heading">
         <h3 id="notes-heading">Add a note</h3>
         <div class="note-actions">
@@ -91,11 +94,7 @@
         <div id="baselayer-control" class="baselayer-control" aria-label="Map background"></div>
       </section>
 
-      <section class="tools-section" aria-labelledby="board-heading">
-        <h3 id="board-heading">Your board</h3>
-        <button id="load-btn" type="button">Load JSON</button>
-        <input id="load-input" type="file" accept="application/json,.json" hidden />
-      </section>
+      </fieldset>
     </aside>
 
   <div id="map-container">
@@ -125,12 +124,11 @@
     <div id="polygon-banner" class="drop-banner polygon-banner" aria-live="polite">
       Click to add corners — double-click or press <kbd>Enter</kbd> to finish, <kbd>Esc</kbd> to cancel
     </div>
-    </main>
-
     <!-- Drop-pin mode instruction banner -->
     <div id="drop-banner" class="drop-banner" aria-live="polite">
       Click anywhere on the map to place a pin for the selected card — press <kbd>Esc</kbd> to cancel
     </div>
+    </main>
   </div>
 
   <!-- Navigation hint shown in view mode -->

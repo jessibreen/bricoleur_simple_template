@@ -17,6 +17,7 @@ const deleteAnnotationBtn = document.getElementById("delete-annotation");
 const annotationFillInput = document.getElementById("annotation-fill");
 const modeToggleBtn = document.getElementById("mode-toggle-btn");
 const toolsPanel = document.getElementById("tools-panel");
+const toolsContent = document.getElementById("tools-content");
 const toolsToggleBtn = document.getElementById("tools-toggle-btn");
 const toolsCloseBtn = document.getElementById("tools-close-btn");
 const annotationInputPopover = document.getElementById("annotation-input-popover");
@@ -1798,18 +1799,25 @@ function togglePinForCard(cardId) {
 }
 
 // ── View mode ───────────────────────────────────────────────────────────────────
+function updateModeButton() {
+  modeToggleBtn.textContent = modeToggleBtn.disabled
+    ? "Loading map…"
+    : state.isViewMode ? "Edit" : "Preview";
+  modeToggleBtn.title = modeToggleBtn.disabled
+    ? "Loading map, please wait"
+    : state.isViewMode
+      ? "Open the editing tools. Changes stay in this browser until you download and publish them."
+      : "See the map the way visitors will";
+  modeToggleBtn.hidden = state.isViewMode && !state.everEdited && state.mapConfig?.showEditButton === false;
+}
+
 function setViewMode(enabled) {
   state.isViewMode = enabled;
   if (!enabled) state.everEdited = true;
   document.body.classList.toggle("view-mode", enabled);
 
-  // The same button switches between looking at the map and editing it.
-  modeToggleBtn.textContent = enabled ? "Edit" : "Preview";
-  modeToggleBtn.title = enabled
-    ? "Open the editing tools. Changes stay in this browser until you download and publish them."
-    : "See the map the way visitors will";
   // Editors retain the button in Preview even when it is hidden for visitors.
-  modeToggleBtn.hidden = enabled && !state.everEdited && state.mapConfig?.showEditButton === false;
+  updateModeButton();
 
   setToolsVisible(!enabled);
 
@@ -2340,20 +2348,20 @@ async function loadDataLayers(layers, mapConfig = {}) {
   renderLayerLegends();
 }
 
+function setPanelOpen(open) {
+  toolsPanel.hidden = !open;
+  toolsToggleBtn.setAttribute("aria-expanded", String(open));
+  toolsToggleBtn.textContent = open ? "Hide tools" : "Show tools";
+}
+
+toolsToggleBtn.addEventListener("click", () => setPanelOpen(toolsPanel.hidden));
+toolsCloseBtn.addEventListener("click", () => {
+  setPanelOpen(false);
+  toolsToggleBtn.focus();
+});
+
 // ── Event wiring ───────────────────────────────────────────────────────────────
 function wireEvents() {
-  function setPanelOpen(open) {
-    toolsPanel.hidden = !open;
-    toolsToggleBtn.setAttribute("aria-expanded", String(open));
-    toolsToggleBtn.textContent = open ? "Hide tools" : "Show tools";
-  }
-
-  toolsToggleBtn.addEventListener("click", () => setPanelOpen(toolsPanel.hidden));
-  toolsCloseBtn.addEventListener("click", () => {
-    setPanelOpen(false);
-    toolsToggleBtn.focus();
-  });
-
   // ── Annotation controls ────────────────────────────────────────────────────
   annotationColorInput.addEventListener("input", (ev) => {
     state.annotation.color = ev.target.value;
@@ -2719,26 +2727,6 @@ function wireEvents() {
     }
   });
 
-  // ── Keep string SVG sized to the map container ────────────────────────────
-  new ResizeObserver(() => {
-    // The map area changes size when the tools panel opens or closes;
-    // Leaflet only notices window resizes on its own.
-    state.map.invalidateSize({ animate: false });
-    // Until the visitor moves the map themselves, keep showing the author's
-    // view (covers a phone being rotated, or a slow first layout).
-    if (!state.userTouchedMap && state.isViewMode) {
-      applyBoardView();
-      if (state.map.getSize().x < 700) {
-        for (const card of state.cards.values()) {
-          if (!card.minimized) setCardMinimized(card, true);
-        }
-      }
-    }
-    resizeStringLayer();
-    resizeAnnotationCanvas();
-    for (const card of state.cards.values()) keepFloatingCardOnScreen(card);
-  }).observe(mapEl);
-
   for (const type of ["pointerdown", "wheel", "keydown"]) {
     mapContainer.addEventListener(type, () => { state.userTouchedMap = true; }, { capture: true, passive: true });
   }
@@ -2761,6 +2749,27 @@ function wireEvents() {
     ev.preventDefault();
     ev.returnValue = "";
   });
+}
+
+function observeMapResize() {
+  new ResizeObserver(() => {
+    // The map area changes size when the tools panel opens or closes;
+    // Leaflet only notices window resizes on its own.
+    state.map.invalidateSize({ animate: false });
+    // Until the visitor moves the map themselves, keep showing the author's
+    // view (covers a phone being rotated, or a slow first layout).
+    if (!state.userTouchedMap && state.isViewMode) {
+      applyBoardView();
+      if (state.map.getSize().x < 700) {
+        for (const card of state.cards.values()) {
+          if (!card.minimized) setCardMinimized(card, true);
+        }
+      }
+    }
+    resizeStringLayer();
+    resizeAnnotationCanvas();
+    for (const card of state.cards.values()) keepFloatingCardOnScreen(card);
+  }).observe(mapEl);
 }
 
 // ── Baselayer management ────────────────────────────────────────────────────────
@@ -2837,22 +2846,27 @@ async function init() {
   resizeAnnotationCanvas();
   updateAnnotationInteractivity();
 
+  // Decide which UI to show before loading potentially large data layers.
+  const params    = new URLSearchParams(window.location.search);
+  const modeParam = params.get("mode");
+  const boardPath = params.get("board") || String(state.mapConfig.defaultBoard || "").trim();
+  setViewMode(modeParam === "view" || (modeParam !== "edit" && !!boardPath));
+  observeMapResize();
+
   const orderedLayers = sortLayersForRender(state.mapConfig.layers || [], mc || {});
   await loadDataLayers(orderedLayers, mc || {});
 
   wireEvents();
+  toolsContent.disabled = false;
+  exportImageBtn.disabled = false;
+  saveBtn.disabled = false;
+  loadBtn.disabled = false;
+  modeToggleBtn.disabled = false;
+  updateModeButton();
   resizeStringLayer();
 
   // Which board to open: one named in the link, otherwise the published
   // board set as "defaultBoard" in data/map-config.json.
-  const params    = new URLSearchParams(window.location.search);
-  const modeParam = params.get("mode");
-  const boardPath = params.get("board") || String(state.mapConfig.defaultBoard || "").trim();
-
-  // With a board to show, visitors see it read-only; "?mode=edit" (or the
-  // Edit button) opens the tools. With no board yet, start in the editor.
-  setViewMode(modeParam === "view" || (modeParam !== "edit" && !!boardPath));
-
   if (boardPath) {
     try {
       await loadBoardFromUrl(boardPath);

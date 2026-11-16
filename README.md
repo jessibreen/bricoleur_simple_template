@@ -54,6 +54,7 @@ https://YOUR-USERNAME.github.io/YOUR-REPO/?mode=edit
 ```
 
 Bookmark that address. The editing tools are in the left panel; use `Hide tools` or the panel's close button to make more room, and `Show tools` to reopen it. Visitors initially see the map without the tools panel.
+The map may take a moment to load its data; editing and download controls become available when loading finishes.
 
 **Drawing tools**
 

@@ -55,7 +55,9 @@ body {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  flex-shrink: 0;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .workspace {
@@ -103,6 +105,13 @@ body {
   padding: 0.1rem 0.5rem;
   font-size: 1.3rem;
   line-height: 1;
+}
+
+.tools-content {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 
 .tools-section {
